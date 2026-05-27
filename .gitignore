@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.har
+!tests/fixtures/juice_shop_session.har
