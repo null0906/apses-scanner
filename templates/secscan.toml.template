@@ -1,0 +1,27 @@
+# secscan.toml — per-target configuration
+[target]
+name = "{{ target_name }}"
+base_url = "{{ base_url }}"
+notes = ""
+
+[scan]
+checks = ["sqli", "xss", "ssrf", "authz", "redirect", "data", "headers", "auth", "jwt"]
+# Deliberately conservative defaults for unknown production targets. Operators may raise these via this file or --rate-limit/--max-concurrency only for targets known to tolerate load with client sign-off.
+max_concurrency = 2
+rate_limit_rps = 2
+max_retries = 2
+triage = false
+
+[auth]
+script = "auth_script.py"
+login_url_pattern = "/login"
+session_expiry_minutes = 30
+
+[llm]
+max_input_tokens = 4000
+truncation_chars = 2048
+model = "claude-opus-4-5"
+
+[logging]
+level = "INFO"
+format = "console"

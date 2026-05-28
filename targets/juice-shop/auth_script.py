@@ -55,15 +55,25 @@ if TYPE_CHECKING:
 
 
 async def authenticate(page, config):
-    # Navigate to Juice Shop login page
     await page.goto("http://localhost:3000/#/login", wait_until="networkidle")
-    
-    # Fill in credentials
+
+    # Dismiss Juice Shop's Material welcome/cookie overlays before login.
+    try:
+        await page.click('button[aria-label="dismiss cookie message"]', timeout=1500)
+    except Exception:
+        pass
+    try:
+        await page.click('.mat-dialog-container button', timeout=1500)
+    except Exception:
+        pass
+
     await page.fill('input[name="email"]', 'admin@juice-sh.op')
     await page.fill('input[name="password"]', 'admin123')
-    
-    # Click login button
+
+    try:
+        await page.keyboard.press("Escape")
+    except Exception:
+        pass
+
     await page.click('button[type="submit"]')
-    
-    # Wait for redirect away from login page
     await page.wait_for_load_state("networkidle")

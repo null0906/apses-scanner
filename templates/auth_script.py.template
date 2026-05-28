@@ -1,0 +1,11 @@
+from __future__ import annotations
+
+async def authenticate(page, config):
+    base_url = config.target.base_url
+    # Example:
+    # await page.goto(f"{base_url}/login")
+    # await page.fill("#email", "pentester@example.com")
+    # await page.fill("#password", "password")
+    # await page.click('button[type="submit"]')
+    # await page.wait_for_load_state("networkidle")
+    raise NotImplementedError("Edit targets/{{TARGET_NAME}}/auth_script.py to implement login")

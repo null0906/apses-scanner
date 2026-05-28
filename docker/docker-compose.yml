@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: secscan
+      POSTGRES_PASSWORD: secscan
+      POSTGRES_DB: secscan
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U secscan -d secscan"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  interactsh-server:
+    image: projectdiscovery/interactsh-server:latest
+    ports:
+      - "9000:9000"
+    command: ["-host", "localhost", "-port", "9000", "-disableHttps", "-disableSmtp", "-disableDns", "-listenip", "0.0.0.0"]
+    restart: unless-stopped
+
+volumes:
+  pgdata:
