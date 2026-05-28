@@ -221,24 +221,60 @@ async def authenticate(page, config):
 
 Use dedicated test accounts. Do not put real client production credentials into commits.
 
+### Capturing a Good HAR — Coverage Determines Findings
+
+**Golden rule: SecScan only tests inputs and endpoints that appear in the HAR. If a URL was not visited, a button was not clicked, a form was not submitted, or a search box was not typed into with a real value, SecScan cannot find a vulnerability there.**
+
+During HAR capture, the operator must actively exercise the application, not just navigate around it:
+
+- Log in fully and reach the authenticated state.
+- Visit every distinct page and route in the application.
+- Submit every form with real non-empty values. Do not just open the form; actually type and submit it.
+- Type non-empty queries into every search box and submit.
+- Trigger every filter, sort, dropdown, and toggle.
+- Click into detail views, modals, and tabs.
+- Visit admin areas if the test account has access.
+- Trigger error states with wrong inputs and invalid IDs so error paths are captured.
+- Perform create, update, and delete actions on test data where safe.
+- Hit user profile, settings, exports, downloads, and any "view as" toggles.
+- Switch between any roles or tenants the test account can access.
+
+Empty values matter. If the operator visits a search page but never types a query, the search parameter will be captured as empty, and SecScan v0.1 may classify it as not-worth-injecting. Always submit real values.
+
+Chrome HAR export:
+
+1. Open DevTools with `Cmd+Opt+I` on macOS or `F12`.
+2. Open the Network tab.
+3. Tick `Preserve log`.
+4. Browse the app using the checklist above.
+5. Right-click any network entry.
+6. Select `Save all as HAR with content`.
+7. Save it to `targets/<target>/session.har`.
+
+Firefox HAR export:
+
+1. Open DevTools.
+2. Open the Network tab.
+3. Click the gear/settings icon.
+4. Enable `Persist Logs`.
+5. Browse the app using the checklist above.
+6. Right-click a network entry.
+7. Select `Save All As HAR`.
+8. Save it to `targets/<target>/session.har`.
+
+A thorough HAR capture for a real engagement typically takes 30-60 minutes of active browsing. Less time usually means less coverage.
+
+If SecScan's report is unexpectedly empty or thin, check HAR coverage first. Re-capture with more active interaction. This is far more often the cause than a tool bug.
+
+Roadmap note: v0.2 will add an automated crawler so SecScan can discover pages and exercise inputs on its own. Until then, HAR quality is the single biggest factor in scanner output quality.
+
 ### Capture a HAR
 
-Open the target in a browser, open DevTools Network tab, preserve logs, and browse every flow you want tested. Export the HAR and save it under the target directory, for example:
+Export the HAR from your browser and save it under the target directory, for example:
 
 ```text
 targets/acme-fintech/session.har
 ```
-
-Capture actively, not passively:
-
-- Log in.
-- Visit every important page.
-- Submit forms.
-- Type into search boxes.
-- Trigger filters, exports, settings changes, profile views, dashboard widgets, admin views, and error-prone flows.
-- Use realistic values in inputs.
-
-Unvisited pages and unused inputs are invisible to SecScan.
 
 ### Ingest
 
