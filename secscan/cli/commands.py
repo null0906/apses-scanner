@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from secscan.checks.base import Endpoint as CheckEndpoint
 from secscan.config import load_config
+from secscan.crawler import CrawlerEngine
 from secscan.ingest.har_parser import parse_har
 from secscan.ingest.normalizer import normalize_entries
 from secscan.models.schema import Base, Endpoint, Finding, Scan, Session as DbSession, Target
@@ -57,9 +58,17 @@ def init(target: str = typer.Option(..., "--target"), base_url: str = typer.Opti
 
 
 @app.command()
-def ingest(har: Path = typer.Option(..., "--har"), target: str = typer.Option(..., "--target")):
-    """Parse a HAR and store normalized endpoints for a target."""
-    asyncio.run(_ingest(har, target))
+def ingest(
+    har: Path | None = typer.Option(None, "--har"),
+    target: str = typer.Option(..., "--target"),
+    crawl: bool = typer.Option(False, "--crawl", help="Use the Phase 1 browser crawler instead of a HAR file."),
+):
+    """Parse a HAR or crawl the target and store normalized endpoints."""
+    if har and crawl:
+        raise typer.BadParameter("--crawl and --har are mutually exclusive")
+    if not har and not crawl:
+        raise typer.BadParameter("Provide either --har or --crawl")
+    asyncio.run(_ingest(target, har=har, crawl=crawl))
 
 
 @app.command()
@@ -69,9 +78,10 @@ def run(
     output_dir: Path = typer.Option(Path("."), "--output-dir"),
     rate_limit: float | None = typer.Option(None, "--rate-limit"),
     max_concurrency: int | None = typer.Option(None, "--max-concurrency"),
+    crawl_only: bool = typer.Option(False, "--crawl-only", help="Skip checks and report the existing endpoint graph only."),
 ):
     """Run selected checks against stored endpoints."""
-    code = asyncio.run(_run(target, checks, output_dir, rate_limit, max_concurrency))
+    code = asyncio.run(_run(target, checks, output_dir, rate_limit, max_concurrency, crawl_only))
     raise typer.Exit(code=code)
 
 
@@ -95,15 +105,31 @@ async def _ensure_target(name: str, base_url: str) -> None:
     await engine.dispose()
 
 
-async def _ingest(har: Path, target_name: str) -> None:
+async def _ingest(target_name: str, har: Path | None = None, crawl: bool = False) -> None:
     config = load_config(target_name)
-    entries = parse_har(har)
+    if crawl:
+        auth_script = Path("targets") / target_name / getattr(config.auth, "script", "auth_script.py")
+        if not auth_script.exists():
+            raise typer.BadParameter(f"--crawl requires an auth script at {auth_script}")
+        session = await bootstrap_session(config, Path("targets") / target_name)
+        entries = await CrawlerEngine(config, session).crawl(target_name)
+    elif har:
+        entries = parse_har(har)
+    else:
+        raise typer.BadParameter("Provide either --har or --crawl")
+
     endpoints = normalize_entries(entries, config.target.base_url)
+    count = await _persist_endpoints(target_name, config.target.base_url, endpoints)
+    source = "crawl" if crawl else "HAR"
+    typer.echo(f"Ingested {len(endpoints)} endpoints ({count} new) for {target_name} from {source}")
+
+
+async def _persist_endpoints(target_name: str, base_url: str, endpoints: list[CheckEndpoint]) -> int:
     engine = _engine(); SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
     async with SessionLocal() as db:
         target = (await db.execute(select(Target).where(Target.name == target_name))).scalar_one_or_none()
         if target is None:
-            target = Target(name=target_name, base_url=config.target.base_url, notes="")
+            target = Target(name=target_name, base_url=base_url, notes="")
             db.add(target); await db.flush()
         count = 0
         for ep in endpoints:
@@ -116,10 +142,10 @@ async def _ingest(har: Path, target_name: str) -> None:
                 db.add(Endpoint(**values)); count += 1
         await db.commit()
     await engine.dispose()
-    typer.echo(f"Ingested {len(endpoints)} endpoints ({count} new) for {target_name}")
+    return count
 
 
-async def _run(target_name: str, checks_csv: str | None, output_dir: Path, rate_limit: float | None, max_concurrency: int | None) -> int:
+async def _run(target_name: str, checks_csv: str | None, output_dir: Path, rate_limit: float | None, max_concurrency: int | None, crawl_only: bool = False) -> int:
     config = load_config(target_name)
     selected = [c.strip() for c in checks_csv.split(",") if c.strip()] if checks_csv else list(config.scan.checks)
     engine = _engine(); SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
@@ -131,6 +157,9 @@ async def _run(target_name: str, checks_csv: str | None, output_dir: Path, rate_
         endpoints = [_to_check_endpoint(row) for row in rows]
         if not endpoints:
             raise typer.BadParameter(f"No endpoints for {target_name}; run secscan ingest first")
+        if crawl_only:
+            typer.echo(f"Crawl-only mode: {len(endpoints)} endpoints discovered, no checks run.")
+            return 0
         scan = Scan(target_id=target.id, status="running", summary={}, checks_enabled=selected, triage_enabled=False, config={})
         db.add(scan); await db.flush()
         try:
