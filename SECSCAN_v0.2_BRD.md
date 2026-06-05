@@ -3,7 +3,7 @@
 - Owner: Atharva Sardesai
 - Status: Draft, locked pending validation gate setup
 - Capacity: ~20 hrs/week (same as v0.1)
-- Build window estimate: 8-10 weeks
+- Build window estimate: 8.5-10.5 weeks
 - Predecessor: v0.1 shipped, in colleague use, see `SECSCAN_v0.1_BRD_FRD.md`
 
 ## 0. What v0.2 is
@@ -92,7 +92,9 @@ All three tiers must pass before v0.2 ships. Tier 1 runs first as an early gate.
 
 ### Tier 1 — Crawler-only on authenticated public apps (CAPABILITY VALIDATION)
 
-Run only the crawler component, with no scan checks and no injection payloads, against 3-5 authenticated public apps where the operator has a legitimate account and is scanning only their own data. Examples include an owned GitHub org, owned Notion workspace, owned Linear account, own Gmail account in read-only mode, and a Netflix account in browse-only mode.
+Run only the crawler component, with no scan checks and no injection payloads, against 3-5 authenticated public apps where the operator has a legitimate account and is scanning only their own data. Examples include an owned GitHub org, owned Notion workspace, owned Linear account, own Gmail account in read-only mode, and a Netflix account in browse-only mode. At least one of the 3-5 Tier 1 targets must be a dashboard-style SaaS app with multi-page authenticated UI complexity, such as an owned GitHub org, owned Notion workspace, owned Linear account, or owned SecComply CRM account, not only consumer/media apps. The dashboard-shape target is the load-bearing validation.
+
+Each Tier 1 target requires its own `auth_script.py` adapted to that app's login flow. This is real operator setup work, estimated at 30-60 minutes per target, and is part of the validation effort, not a reusable artifact. The auth scripts are not committed to the repo.
 
 Mode: crawler navigates only. No scan checks run. No payloads are sent. The output is an endpoint graph for inspection. This is a navigation capability test, not a vulnerability test.
 
@@ -119,10 +121,10 @@ Exit criterion: crawler completes both runs without crashing, produces endpoint 
 The single biggest predictor of whether v0.2 ships is whether we resist adding things to it mid-build.
 
 - No new checks during v0.2 build. If colleague feedback or a validation tier reveals a needed new check, it goes on the v0.3 backlog.
-- No detection-quality tuning during v0.2 build unless a regression blocks crawler validation. Existing checks are otherwise frozen.
+- No detection-quality tuning during v0.2 build. Existing checks are frozen. The single exception is a v0.1 finding-count regression caught by Tier 2 validation. In that specific case, restore the affected check's v0.1 behaviour, do not touch other checks, and do not expand the fix into broader tuning.
 - No infrastructure expansion. No Kubernetes, no new database, no message queue. v0.1 architecture plus one crawler module.
 - No re-platforming. Python + Playwright + httpx + Postgres stays.
-- A 20 hrs/week build can produce one focused feature in 8-10 weeks. It cannot produce that feature plus three others.
+- A 20 hrs/week build can produce one focused feature in 8.5-10.5 weeks. It cannot produce that feature plus three others.
 
 ## 7. Safety and Scope
 
@@ -174,11 +176,11 @@ v0.2 additive path:
 
 `secscan ingest --har <file>` still works for targets where a HAR is preferred. `secscan ingest --crawl --target <name>` runs the crawler. Both write to the same endpoint table. The downstream pipeline is unchanged.
 
-## 9. Build plan (provisional, 8-10 weeks at 20 hrs/wk)
+## 9. Build plan (provisional, 8.5-10.5 weeks at 20 hrs/wk)
 
 | Phase | Weeks | Deliverable | Gate |
 | --- | --- | --- | --- |
-| Phase 0 | 1 week | crAPI + own SaaS account access provisioned; colleague feedback template distributed | Targets reachable; allowlist configured |
+| Phase 0 | 1.5 weeks | crAPI + own SaaS account access provisioned across multiple SaaS products; allowlist configured; colleague feedback template distributed | Targets reachable; allowlist configured |
 | Phase 1 | 2 weeks | Crawler skeleton: Playwright launch, auth bootstrap reuse, page navigation, network capture into existing endpoint table | Crawl Juice Shop homepage, capture XHR calls, store in DB |
 | Phase 2 | 2 weeks | DOM extraction + form/button interaction with safe benign values + destructive-action blocklist | Crawler types into Juice Shop search, submits, captures resulting request; refuses delete-shaped buttons |
 | Phase 3 | 2 weeks | Recursive navigation + depth limiting + scope enforcement + URL deduplication + crawl time/page caps | Crawler visits Juice Shop products list, follows product detail, captures routes, terminates cleanly |
@@ -186,7 +188,7 @@ v0.2 additive path:
 | Phase 5 | 1 week | Tier 1 capability validation on 3-5 authenticated public apps in crawl-only mode | Passes Section 5.5 Tier 1 |
 | Phase 6 | 1 week | Tier 2 + Tier 3 integration + colleague feedback incorporation | XSS fires on Juice Shop search; crAPI run finds real findings; SecComply staging run with Sanil sign-off completes |
 
-Each phase has buffer inside the 8-10 week range. Phase 2 and Phase 6 are the most likely to slip.
+Each phase has buffer inside the 8.5-10.5 week range. Phase 2 and Phase 6 are the most likely to slip.
 
 ## 10. Risks
 
