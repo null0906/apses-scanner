@@ -112,7 +112,11 @@ async def _ingest(target_name: str, har: Path | None = None, crawl: bool = False
         if not auth_script.exists():
             raise typer.BadParameter(f"--crawl requires an auth script at {auth_script}")
         session = await bootstrap_session(config, Path("targets") / target_name)
-        entries = await CrawlerEngine(config, session).crawl(target_name)
+        crawler = CrawlerEngine(config, session)
+        entries = await crawler.crawl(target_name)
+        surface = getattr(crawler, "last_dom_surface", None)
+        if surface is not None:
+            typer.echo(f"DOM extraction: {len(surface.links)} links, {len(surface.forms)} forms, {len(surface.buttons)} buttons found.")
     elif har:
         entries = parse_har(har)
     else:

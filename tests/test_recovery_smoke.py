@@ -19,7 +19,7 @@ from secscan.checks.sqli import SQLiCheck
 from secscan.checks.ssrf import SSRFCheck, _metadata_evidence
 from secscan.checks.xss import XSSCheck
 from secscan.config import load_config
-from secscan.crawler.engine import CrawlerEngine, _host, _request_to_entry
+from secscan.crawler.engine import CrawlerEngine, FormFieldSpec, FormSpec, _host, _interact_with_forms, _request_to_entry
 from secscan.ingest.har_parser import HarEntry
 from secscan.ingest.normalizer import normalize_entries
 from secscan.replay.engine import PayloadInjector, ReplayRequest, ReplayResponse
@@ -166,6 +166,7 @@ def test_session_helpers_config_reports_and_utils(tmp_path):
     assert _high_entropy("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") is not None
     config = load_config("missing-target", targets_dir=tmp_path)
     assert config.scan.rate_limit_rps == 2 and config.scan.max_concurrency == 2
+    assert config.crawler.blocklist_extra == [] and config.crawler.blocklist_override is False
     assert guidance("sqli") and prompt_for("sqli")
 
     class Result:
@@ -236,6 +237,8 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
         def __init__(self):
             self.handlers = {}
             self.route_handler = None
+            self.fills = []
+            self.clicks = []
 
         async def route(self, pattern, handler):
             self.route_handler = handler
@@ -251,15 +254,44 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
             await self.handlers["request"](FakeRequest("http://cdn.example.test/asset.js", "xhr"))
             await self.handlers["request"](FakeRequest("http://app.example.test/app.js", "script"))
 
+        async def evaluate(self, script, base_url):
+            return {
+                "links": ["http://app.example.test/dashboard", "http://cdn.example.test/tracker"],
+                "forms": [{
+                    "action": "/api/search",
+                    "method": "post",
+                    "selector": "form:nth-of-type(1)",
+                    "submit_selector": "#search-submit",
+                    "submit_text": "Search",
+                    "fields": [{"name": "q", "type": "search", "value": "", "selector": "#q"}],
+                }],
+                "buttons": [{
+                    "text": "Open settings",
+                    "selector": "#settings",
+                    "form_selector": "",
+                    "route_hint": "/settings",
+                }],
+            }
+
+        async def fill(self, selector, value):
+            self.fills.append((selector, value))
+
+        async def click(self, selector):
+            self.clicks.append(selector)
+
+        async def wait_for_load_state(self, state, timeout=None):
+            return None
+
     class FakeContext:
         def __init__(self):
             self.cookies = None
+            self.page = FakePage()
 
         async def add_cookies(self, cookies):
             self.cookies = cookies
 
         async def new_page(self):
-            return FakePage()
+            return self.page
 
     class FakeBrowser:
         async def new_context(self, **kwargs):
@@ -284,11 +316,18 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
             return False
 
     monkeypatch.setattr("secscan.crawler.engine.async_playwright", lambda: FakePlaywright())
-    records = await CrawlerEngine(Config(), Session(cookies=[{"name": "sid", "value": "1"}], headers={"Authorization": "Bearer x"})).crawl("app")
+    crawler = CrawlerEngine(Config(), Session(cookies=[{"name": "sid", "value": "1"}], headers={"Authorization": "Bearer x"}))
+    records = await crawler.crawl("app")
     assert len(records) == 1
     assert records[0].url == "http://app.example.test/api/me?x=1"
     assert records[0].query_params == {"x": "1"}
     assert _host("http://app.example.test/a") == "app.example.test"
+    surface = crawler.last_dom_surface
+    assert surface.links == ["http://app.example.test/dashboard"]
+    assert surface.forms[0].action == "http://app.example.test/api/search"
+    assert surface.forms[0].fields[0].selector == "#q"
+    assert surface.forms[0].submit_selector == "#search-submit"
+    assert surface.buttons[0].route_hint == "/settings"
 
 
 def test_crawler_request_to_entry_preserves_post_body_and_content_type():
@@ -302,6 +341,87 @@ def test_crawler_request_to_entry_preserves_post_body_and_content_type():
     assert entry.method == "POST"
     assert entry.post_data_mime == "application/json"
     assert entry.post_data_text == '{"name":"secscan"}'
+
+
+@pytest.mark.asyncio
+async def test_crawler_form_interaction_skips_password_hidden_file_and_blocked_forms():
+    from secscan.crawler.blocklist import BlocklistChecker
+    from secscan.replay.ratelimit import RateLimiter
+
+    class Page:
+        def __init__(self):
+            self.fills = []
+            self.clicks = []
+
+        async def fill(self, selector, value):
+            self.fills.append((selector, value))
+
+        async def click(self, selector):
+            self.clicks.append(selector)
+
+        async def wait_for_load_state(self, state, timeout=None):
+            return None
+
+    page = Page()
+    forms = [
+        FormSpec(
+            action="http://example.test/search",
+            method="GET",
+            submit_selector="#submit",
+            fields=[
+                FormFieldSpec("q", "search", "", "#q"),
+                FormFieldSpec("email", "email", "", "#email"),
+                FormFieldSpec("n", "number", "", "#n"),
+                FormFieldSpec("p", "password", "", "#p"),
+                FormFieldSpec("csrf", "hidden", "token", "#csrf"),
+                FormFieldSpec("upload", "file", "", "#file"),
+            ],
+        ),
+        FormSpec(
+            action="http://example.test/delete",
+            method="POST",
+            submit_selector="#delete",
+            fields=[FormFieldSpec("name", "text", "", "#name")],
+        ),
+    ]
+    await _interact_with_forms(page, forms, BlocklistChecker(), RateLimiter(max_concurrency=1, rate_limit_rps=100))
+    assert page.fills == [("#q", "secscan_test"), ("#email", "test@secscan.internal"), ("#n", "1")]
+    assert page.clicks == ["#submit"]
+
+
+@pytest.mark.asyncio
+async def test_crawler_form_interaction_submits_standalone_inputs_with_enter():
+    from secscan.crawler.blocklist import BlocklistChecker
+    from secscan.replay.ratelimit import RateLimiter
+
+    class Page:
+        def __init__(self):
+            self.fills = []
+            self.clicks = []
+            self.presses = []
+
+        async def fill(self, selector, value):
+            self.fills.append((selector, value))
+
+        async def click(self, selector):
+            self.clicks.append(selector)
+
+        async def press(self, selector, key):
+            self.presses.append((selector, key))
+
+        async def wait_for_load_state(self, state, timeout=None):
+            return None
+
+    page = Page()
+    await _interact_with_forms(
+        page,
+        [FormSpec(action="http://example.test/#/search", method="GET", fields=[FormFieldSpec("q", "text", "", "#q")])],
+        BlocklistChecker(),
+        RateLimiter(max_concurrency=1, rate_limit_rps=100),
+    )
+    assert page.fills == [("#q", "secscan_test")]
+    assert page.clicks == []
+    assert page.presses == [("#q", "Enter")]
 
 
 def test_parse_har_and_request_helpers(tmp_path):
@@ -477,3 +597,28 @@ def test_cli_run_crawl_only_flag_skips_checks(monkeypatch):
     result = CliRunner().invoke(app, ["run", "--target", "t", "--crawl-only"])
     assert result.exit_code == 0
     assert "Crawl-only mode" in result.output
+
+
+def test_blocklist_checker_blocks_default_destructive_patterns():
+    from secscan.crawler.blocklist import BlocklistChecker
+    from secscan.crawler.engine import FormFieldSpec, FormSpec
+
+    checker = BlocklistChecker()
+    assert checker.blocks_form(FormSpec(action="http://example.test/delete-account", method="POST"))
+    assert checker.blocks_form(FormSpec(action="http://example.test/profile", method="POST", submit_text="Remove user"))
+    assert checker.blocks_form(FormSpec(action="http://example.test/profile", method="POST", fields=[FormFieldSpec("_method", "hidden", "DELETE", "#m")]))
+    assert checker.blocks_form(FormSpec(action="http://example.test/profile", method="POST", fields=[FormFieldSpec("_method", "hidden", "PUT", "#m")]))
+    assert checker.blocks_button_text("Log out")
+    assert not checker.blocks_form(FormSpec(action="http://example.test/search", method="GET", submit_text="Search"))
+    assert not checker.blocks_button_text("Search")
+
+
+def test_blocklist_checker_extra_and_override_config():
+    from secscan.crawler.blocklist import BlocklistChecker
+    from secscan.crawler.engine import FormSpec
+
+    extra = BlocklistChecker(extra_patterns=["archive"])
+    assert extra.blocks_form(FormSpec(action="http://example.test/archive", method="POST"))
+    override = BlocklistChecker(extra_patterns=["archive"], override_defaults=True)
+    assert override.blocks_form(FormSpec(action="http://example.test/archive", method="POST"))
+    assert not override.blocks_form(FormSpec(action="http://example.test/delete", method="POST"))

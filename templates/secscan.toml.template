@@ -17,6 +17,14 @@ script = "auth_script.py"
 login_url_pattern = "/login"
 session_expiry_minutes = 30
 
+[crawler]
+# Extra destructive-action patterns to skip during crawler form interaction.
+# These add to the default blocklist: delete/remove/destroy/deactivate/disable/cancel/revoke/terminate/purge/wipe/reset/logout/signout.
+blocklist_extra = []
+# Dangerous: if true, disables the default destructive-action blocklist and uses only blocklist_extra.
+# Keep false unless the target config explicitly needs a custom allowlist and the operator accepts the risk.
+blocklist_override = false
+
 [llm]
 max_input_tokens = 4000
 truncation_chars = 2048
