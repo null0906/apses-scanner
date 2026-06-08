@@ -117,6 +117,9 @@ async def _ingest(target_name: str, har: Path | None = None, crawl: bool = False
         surface = getattr(crawler, "last_dom_surface", None)
         if surface is not None:
             typer.echo(f"DOM extraction: {len(surface.links)} links, {len(surface.forms)} forms, {len(surface.buttons)} buttons found.")
+        summary = getattr(crawler, "last_summary", "")
+        if summary:
+            typer.echo(summary)
     elif har:
         entries = parse_har(har)
     else:

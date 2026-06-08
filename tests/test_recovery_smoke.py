@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -19,7 +20,7 @@ from secscan.checks.sqli import SQLiCheck
 from secscan.checks.ssrf import SSRFCheck, _metadata_evidence
 from secscan.checks.xss import XSSCheck
 from secscan.config import load_config
-from secscan.crawler.engine import CrawlerEngine, FormFieldSpec, FormSpec, _host, _interact_with_forms, _request_to_entry
+from secscan.crawler.engine import ButtonSpec, CrawlerEngine, FormFieldSpec, FormSpec, _crawl_key, _enqueue_url, _follow_route_hint_buttons, _host, _interact_with_forms, _navigate_in_scope, _request_to_entry
 from secscan.ingest.har_parser import HarEntry
 from secscan.ingest.normalizer import normalize_entries
 from secscan.replay.engine import PayloadInjector, ReplayRequest, ReplayResponse
@@ -167,6 +168,7 @@ def test_session_helpers_config_reports_and_utils(tmp_path):
     config = load_config("missing-target", targets_dir=tmp_path)
     assert config.scan.rate_limit_rps == 2 and config.scan.max_concurrency == 2
     assert config.crawler.blocklist_extra == [] and config.crawler.blocklist_override is False
+    assert (config.crawler.max_depth, config.crawler.max_pages, config.crawler.max_time_seconds) == (3, 50, 1800)
     assert guidance("sqli") and prompt_for("sqli")
 
     class Result:
@@ -239,6 +241,8 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
             self.route_handler = None
             self.fills = []
             self.clicks = []
+            self.gotos = []
+            self.url = "about:blank"
 
         async def route(self, pattern, handler):
             self.route_handler = handler
@@ -247,6 +251,8 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
             self.handlers[event] = handler
 
         async def goto(self, url, wait_until=None):
+            self.gotos.append(url)
+            self.url = url
             route = FakeRoute(url)
             await self.route_handler(route)
             assert route.continued is True
@@ -316,11 +322,23 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
             return False
 
     monkeypatch.setattr("secscan.crawler.engine.async_playwright", lambda: FakePlaywright())
-    crawler = CrawlerEngine(Config(), Session(cookies=[{"name": "sid", "value": "1"}], headers={"Authorization": "Bearer x"}))
+    crawler = CrawlerEngine(Config(), Session(
+        cookies=[{"name": "sid", "value": "1"}],
+        headers={"Authorization": "Bearer x"},
+        captured_requests=[{
+            "method": "POST",
+            "url": "http://app.example.test/rest/user/login",
+            "headers": {"content-type": "application/json"},
+            "post_data": '{"email":"user@example.test","password":"secret"}',
+        }],
+    ))
     records = await crawler.crawl("app")
-    assert len(records) == 1
-    assert records[0].url == "http://app.example.test/api/me?x=1"
-    assert records[0].query_params == {"x": "1"}
+    assert len(records) == 3
+    assert records[0].method == "POST"
+    assert records[0].url == "http://app.example.test/rest/user/login"
+    assert records[0].post_data_text == '{"email":"user@example.test","password":"secret"}'
+    assert records[1].url == "http://app.example.test/api/me?x=1"
+    assert records[1].query_params == {"x": "1"}
     assert _host("http://app.example.test/a") == "app.example.test"
     surface = crawler.last_dom_surface
     assert surface.links == ["http://app.example.test/dashboard"]
@@ -328,6 +346,98 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
     assert surface.forms[0].fields[0].selector == "#q"
     assert surface.forms[0].submit_selector == "#search-submit"
     assert surface.buttons[0].route_hint == "/settings"
+    assert crawler.visited_urls == {"http://app.example.test/", "http://app.example.test/dashboard"}
+    assert crawler.max_depth_reached == 1
+    assert crawler.last_summary == "Crawl complete: 2 pages visited, 3 endpoints captured, depth 1 reached, stopped by queue_empty."
+
+
+def test_crawler_queue_deduplicates_hash_routes_and_rejects_external_or_deep_urls():
+    queue = deque()
+    queued = set()
+    visited = set()
+    base_url = "http://app.example.test"
+
+    assert _enqueue_url(queue, queued, visited, "http://app.example.test/#/search", 1, base_url, 3)
+    assert _crawl_key("http://app.example.test/#/search", base_url) == "http://app.example.test/search"
+    assert not _enqueue_url(queue, queued, visited, "http://app.example.test/#/search", 1, base_url, 3)
+    assert not _enqueue_url(queue, queued, visited, "http://external.example/search", 1, base_url, 3)
+    assert not _enqueue_url(queue, queued, visited, "http://app.example.test/#/deep", 4, base_url, 3)
+    assert list(queue) == [("http://app.example.test/#/search", 1)]
+
+
+@pytest.mark.asyncio
+async def test_crawler_navigation_blocks_external_redirect_and_returns_in_scope():
+    from secscan.replay.ratelimit import RateLimiter
+
+    class Page:
+        def __init__(self):
+            self.url = "http://app.example.test/start"
+            self.gotos = []
+
+        async def goto(self, url, wait_until=None):
+            self.gotos.append(url)
+            self.url = "https://external.example/" if url.endswith("/redirect") else url
+
+    page = Page()
+    ok = await _navigate_in_scope(
+        page,
+        "http://app.example.test/redirect",
+        "http://app.example.test/start",
+        "http://app.example.test",
+        RateLimiter(max_concurrency=1, rate_limit_rps=100),
+    )
+    assert ok is False
+    assert page.gotos == ["http://app.example.test/redirect", "http://app.example.test/start"]
+
+
+@pytest.mark.asyncio
+async def test_crawler_route_hint_click_extracts_and_queues_resulting_page():
+    from secscan.crawler.blocklist import BlocklistChecker
+    from secscan.replay.ratelimit import RateLimiter
+
+    class Page:
+        def __init__(self):
+            self.url = "http://app.example.test/"
+            self.clicks = []
+            self.gotos = []
+
+        async def click(self, selector, timeout=None):
+            self.clicks.append(selector)
+            self.url = "http://app.example.test/#/settings"
+
+        async def wait_for_load_state(self, state, timeout=None):
+            return None
+
+        async def evaluate(self, script, base_url):
+            return {"links": ["/profile"], "forms": [], "buttons": []}
+
+        async def goto(self, url, wait_until=None):
+            self.gotos.append(url)
+            self.url = url
+
+    queue = deque()
+    queued = set()
+    visited = {"http://app.example.test/"}
+    page = Page()
+    await _follow_route_hint_buttons(
+        page,
+        [ButtonSpec("Settings", "#settings", route_hint="/#/settings")],
+        "http://app.example.test/",
+        0,
+        "http://app.example.test",
+        queue,
+        queued,
+        visited,
+        3,
+        BlocklistChecker(),
+        RateLimiter(max_concurrency=1, rate_limit_rps=100),
+    )
+    assert page.clicks == ["#settings"]
+    assert page.gotos == ["http://app.example.test/"]
+    assert list(queue) == [
+        ("http://app.example.test/#/settings", 1),
+        ("http://app.example.test/profile", 2),
+    ]
 
 
 def test_crawler_request_to_entry_preserves_post_body_and_content_type():

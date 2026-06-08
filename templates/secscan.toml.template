@@ -18,6 +18,10 @@ login_url_pattern = "/login"
 session_expiry_minutes = 30
 
 [crawler]
+# Conservative crawl bounds. Raise only for targets known to tolerate broader navigation.
+max_depth = 3
+max_pages = 50
+max_time_seconds = 1800
 # Extra destructive-action patterns to skip during crawler form interaction.
 # These add to the default blocklist: delete/remove/destroy/deactivate/disable/cancel/revoke/terminate/purge/wipe/reset/logout/signout.
 blocklist_extra = []

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 import logging
+from collections import deque
 from dataclasses import dataclass, field
 from typing import Any
-from urllib.parse import parse_qsl, urljoin, urlsplit
+from urllib.parse import parse_qsl, urljoin, urlsplit, urlunsplit
 
 from playwright.async_api import async_playwright
 
@@ -51,7 +53,7 @@ class DOMSurface:
 
 
 class CrawlerEngine:
-    """Phase 1/2 crawler: base navigation, request capture, DOM surface extraction."""
+    """Authenticated browser crawler with bounded breadth-first navigation."""
 
     def __init__(self, config: Any, session: Any):
         self.config = config
@@ -66,57 +68,109 @@ class CrawlerEngine:
             extra_patterns=list(getattr(crawler, "blocklist_extra", []) or []),
             override_defaults=bool(getattr(crawler, "blocklist_override", False)),
         )
+        self.max_depth = int(getattr(crawler, "max_depth", 3))
+        self.max_pages = int(getattr(crawler, "max_pages", 50))
+        self.max_time_seconds = int(getattr(crawler, "max_time_seconds", 1800))
         self.last_dom_surface = DOMSurface()
+        self.visited_urls: set[str] = set()
+        self.max_depth_reached = 0
+        self.last_summary = ""
 
     async def crawl(self, target_name: str) -> list[EndpointRecord]:
         base_url = getattr(getattr(self.config, "target", None), "base_url", "")
         if not base_url:
             raise ValueError(f"Target {target_name} has no configured base_url")
 
-        captured: list[EndpointRecord] = []
+        captured = _session_request_entries(getattr(self.session, "captured_requests", []) or [], base_url)
         base_host = _host(base_url)
+        queue: deque[tuple[str, int]] = deque()
+        queued: set[str] = set()
+        self.visited_urls = set()
+        self.max_depth_reached = 0
+        self.last_summary = ""
+        _enqueue_url(queue, queued, self.visited_urls, base_url, 0, base_url, self.max_depth)
+        stop_reason = "queue_empty"
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context(
-                ignore_https_errors=True,
-                extra_http_headers=dict(getattr(self.session, "headers", {}) or {}),
-            )
-            await _add_session_cookies(context, getattr(self.session, "cookies", []) or [], base_url)
-            page = await context.new_page()
+            try:
+                context = await browser.new_context(
+                    ignore_https_errors=True,
+                    extra_http_headers=dict(getattr(self.session, "headers", {}) or {}),
+                )
+                await _add_session_cookies(context, getattr(self.session, "cookies", []) or [], base_url)
+                page = await context.new_page()
 
-            navigation_url = base_url.rstrip("/")
+                navigation_url = base_url.rstrip("/")
 
-            async def rate_limited_route(route):
-                request_url = route.request.url
-                if request_url.rstrip("/") == navigation_url:
-                    await route.continue_()
-                    return
-                async with await self.rate_limiter.acquire(request_url):
-                    await route.continue_()
+                async def rate_limited_route(route):
+                    request_url = route.request.url
+                    if route.request.resource_type == "document" or request_url.rstrip("/") == navigation_url:
+                        await route.continue_()
+                        return
+                    async with await self.rate_limiter.acquire(request_url):
+                        await route.continue_()
 
-            async def capture_request(request):
-                if request.resource_type not in _CAPTURE_TYPES:
-                    return
-                if _host(request.url) != base_host:
-                    _LOG.debug("Dropping out-of-scope crawler request: %s", request.url)
-                    return
-                captured.append(_request_to_entry(request))
+                async def capture_request(request):
+                    if request.resource_type not in _CAPTURE_TYPES:
+                        return
+                    if _host(request.url) != base_host:
+                        _LOG.debug("Dropping out-of-scope crawler request: %s", request.url)
+                        return
+                    captured.append(_request_to_entry(request))
 
-            await page.route("**/*", rate_limited_route)
-            page.on("request", capture_request)
-            async with await self.rate_limiter.acquire(base_url):
-                await page.goto(base_url, wait_until="networkidle")
-            self.last_dom_surface = await _extract_dom_surface(page, base_url)
-            _LOG.info(
-                "DOM extraction: %s links, %s forms, %s buttons found.",
-                len(self.last_dom_surface.links),
-                len(self.last_dom_surface.forms),
-                len(self.last_dom_surface.buttons),
-            )
-            await _interact_with_forms(page, self.last_dom_surface.forms, self.blocklist, self.rate_limiter)
-            await browser.close()
+                await page.route("**/*", rate_limited_route)
+                page.on("request", capture_request)
+                try:
+                    async with asyncio.timeout(self.max_time_seconds):
+                        while queue:
+                            if len(self.visited_urls) >= self.max_pages:
+                                stop_reason = "max_pages"
+                                break
+                            url, depth = queue.popleft()
+                            key = _crawl_key(url, base_url)
+                            queued.discard(key)
+                            if key in self.visited_urls or not _in_scope(url, base_url):
+                                continue
+                            self.visited_urls.add(key)
+                            self.max_depth_reached = max(self.max_depth_reached, depth)
+                            previous_url = getattr(page, "url", base_url) or base_url
+                            if not await _navigate_in_scope(page, url, previous_url, base_url, self.rate_limiter):
+                                continue
+                            self.last_dom_surface = await _extract_dom_surface(page, base_url)
+                            _LOG.info(
+                                "DOM extraction: %s links, %s forms, %s buttons found.",
+                                len(self.last_dom_surface.links),
+                                len(self.last_dom_surface.forms),
+                                len(self.last_dom_surface.buttons),
+                            )
+                            await _interact_with_forms(page, self.last_dom_surface.forms, self.blocklist, self.rate_limiter)
+                            for link in self.last_dom_surface.links:
+                                _enqueue_url(queue, queued, self.visited_urls, link, depth + 1, base_url, self.max_depth)
+                            await _follow_route_hint_buttons(
+                                page,
+                                self.last_dom_surface.buttons,
+                                url,
+                                depth,
+                                base_url,
+                                queue,
+                                queued,
+                                self.visited_urls,
+                                self.max_depth,
+                                self.blocklist,
+                                self.rate_limiter,
+                            )
+                except TimeoutError:
+                    stop_reason = "max_time"
+                    _LOG.warning("Crawler stopped after reaching max_time_seconds=%s.", self.max_time_seconds)
+            finally:
+                await browser.close()
 
+        self.last_summary = (
+            f"Crawl complete: {len(self.visited_urls)} pages visited, {len(captured)} endpoints captured, "
+            f"depth {self.max_depth_reached} reached, stopped by {stop_reason}."
+        )
+        _LOG.info(self.last_summary)
         return captured
 
 
@@ -198,6 +252,98 @@ async def _fill_field(page: Any, selector: str, value: str) -> None:
         await page.fill(selector, value)
 
 
+async def _navigate_in_scope(page: Any, url: str, previous_url: str, base_url: str, rate_limiter: RateLimiter) -> bool:
+    if not _in_scope(url, base_url):
+        _LOG.debug("Dropping out-of-scope crawler navigation: %s", url)
+        return False
+    try:
+        async with await rate_limiter.acquire(url):
+            await _goto_page(page, url)
+    except Exception as exc:
+        _LOG.info("Navigation did not reach networkidle for %s: %s", url, exc)
+    actual_url = getattr(page, "url", url) or url
+    if _in_scope(actual_url, base_url):
+        return True
+    _LOG.warning("External redirect blocked: %s", actual_url)
+    if _in_scope(previous_url, base_url):
+        async with await rate_limiter.acquire(previous_url):
+            await page.goto(previous_url, wait_until="networkidle")
+    return False
+
+
+async def _follow_route_hint_buttons(
+    page: Any,
+    buttons: list[ButtonSpec],
+    current_url: str,
+    depth: int,
+    base_url: str,
+    queue: deque[tuple[str, int]],
+    queued: set[str],
+    visited: set[str],
+    max_depth: int,
+    blocklist: BlocklistChecker,
+    rate_limiter: RateLimiter,
+) -> None:
+    for button in buttons:
+        if not button.route_hint or not button.selector:
+            continue
+        if blocklist.blocks_button_text(button.text):
+            _LOG.warning("Skipping route button %s - matches destructive pattern.", button.text)
+            continue
+        route_url = _normalize_url(button.route_hint, current_url)
+        if not _in_scope(route_url, base_url):
+            _LOG.debug("Dropping out-of-scope route hint: %s", route_url)
+            continue
+        try:
+            async with await rate_limiter.acquire(route_url):
+                await _click_button(page, button.selector)
+            try:
+                await page.wait_for_load_state("networkidle", timeout=3000)
+            except Exception:
+                pass
+        except Exception as exc:
+            _LOG.info("Skipping non-interactable route button %s: %s", button.selector, exc)
+            continue
+
+        actual_url = getattr(page, "url", route_url) or route_url
+        if not _in_scope(actual_url, base_url):
+            _LOG.warning("External redirect blocked: %s", actual_url)
+            await _return_to_url(page, current_url, base_url, rate_limiter)
+            continue
+
+        surface = await _extract_dom_surface(page, base_url)
+        await _interact_with_forms(page, surface.forms, blocklist, rate_limiter)
+        _enqueue_url(queue, queued, visited, actual_url, depth + 1, base_url, max_depth)
+        for link in surface.links:
+            _enqueue_url(queue, queued, visited, link, depth + 2, base_url, max_depth)
+        if _crawl_key(actual_url, base_url) != _crawl_key(current_url, base_url):
+            await _return_to_url(page, current_url, base_url, rate_limiter)
+
+
+async def _click_button(page: Any, selector: str) -> None:
+    try:
+        await page.click(selector, timeout=3000)
+    except TypeError:
+        await page.click(selector)
+
+
+async def _return_to_url(page: Any, url: str, base_url: str, rate_limiter: RateLimiter) -> None:
+    if not _in_scope(url, base_url):
+        return
+    try:
+        async with await rate_limiter.acquire(url):
+            await _goto_page(page, url)
+    except Exception as exc:
+        _LOG.info("Return navigation did not reach networkidle for %s: %s", url, exc)
+
+
+async def _goto_page(page: Any, url: str) -> None:
+    try:
+        await page.goto(url, wait_until="networkidle", timeout=5000)
+    except TypeError:
+        await page.goto(url, wait_until="networkidle")
+
+
 def _test_value_for_field(field_type: str) -> str | None:
     normalized = (field_type or "text").lower()
     if normalized in {"password", "hidden", "file"}:
@@ -224,6 +370,42 @@ def _same_domain_urls(urls: list[str], base_url: str) -> list[str]:
     return kept
 
 
+def _enqueue_url(
+    queue: deque[tuple[str, int]],
+    queued: set[str],
+    visited: set[str],
+    candidate: str,
+    depth: int,
+    base_url: str,
+    max_depth: int,
+) -> bool:
+    normalized = _normalize_url(candidate, base_url)
+    if depth > max_depth:
+        return False
+    if not _in_scope(normalized, base_url):
+        _LOG.debug("Dropping out-of-scope crawler navigation: %s", normalized)
+        return False
+    key = _crawl_key(normalized, base_url)
+    if key in visited or key in queued:
+        return False
+    queue.append((normalized, depth))
+    queued.add(key)
+    return True
+
+
+def _crawl_key(url: str, base_url: str) -> str:
+    normalized = _normalize_url(url, base_url)
+    parts = urlsplit(normalized)
+    if parts.fragment.startswith("/"):
+        route = urlsplit(parts.fragment)
+        return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), route.path or "/", route.query, ""))
+    return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path or "/", parts.query, ""))
+
+
+def _in_scope(url: str, base_url: str) -> bool:
+    return _host(_normalize_url(url, base_url)) == _host(base_url)
+
+
 def _normalize_url(url: str, base_url: str) -> str:
     return urljoin(base_url, url or base_url)
 
@@ -243,6 +425,24 @@ def _request_to_entry(request) -> HarEntry:
         post_data_mime=mime,
         post_data_text=post_data,
     )
+
+
+def _session_request_entries(requests: list[dict[str, Any]], base_url: str) -> list[HarEntry]:
+    entries = []
+    for request in requests:
+        url = str(request.get("url", ""))
+        if not url or not _in_scope(url, base_url):
+            continue
+        headers = {str(k): str(v) for k, v in (request.get("headers", {}) or {}).items()}
+        entries.append(HarEntry(
+            method=str(request.get("method", "GET")).upper(),
+            url=url,
+            headers=headers,
+            query_params={k: v for k, v in parse_qsl(urlsplit(url).query, keep_blank_values=True)},
+            post_data_mime=_content_type(headers),
+            post_data_text=str(request.get("post_data", "") or ""),
+        ))
+    return entries
 
 
 def _content_type(headers: dict[str, str]) -> str:
@@ -342,12 +542,20 @@ _DOM_EXTRACTION_SCRIPT = """
     submit_text: '',
     fields: [fieldFrom(field)],
   })));
-  const buttonNodes = Array.from(document.querySelectorAll('button, input[type="submit"], [role="button"], [routerLink], [data-href]'));
+  const routeHintOf = (button) => {
+    const direct = button.getAttribute('routerLink') || button.getAttribute('data-href') || button.getAttribute('href');
+    if (direct) return direct;
+    const onclick = button.getAttribute('onclick') || '';
+    const match = onclick.match(/(?:window\\.)?location(?:\\.href)?\\s*=\\s*['"]([^'"]+)['"]/i)
+      || onclick.match(/window\\.open\\(\\s*['"]([^'"]+)['"]/i);
+    return match ? match[1] : '';
+  };
+  const buttonNodes = Array.from(document.querySelectorAll('button, input[type="submit"], [role="button"], [routerLink], [data-href], [onclick]'));
   const buttons = buttonNodes.map((button) => ({
     text: textOf(button),
     selector: selectorFor(button),
     form_selector: selectorFor(button.closest('form')),
-    route_hint: button.getAttribute('routerLink') || button.getAttribute('data-href') || button.getAttribute('href') || '',
+    route_hint: routeHintOf(button),
   }));
   return { links, forms, buttons };
 }
