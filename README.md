@@ -335,6 +335,31 @@ After SecScan runs, manual VAPT begins.
 
 Do not paste raw SecScan output into a client report without human verification.
 
+## Known Limitations and Operator Warnings
+
+### Authenticated crawling may trigger application-side effects
+
+The crawler navigates the target app as an authenticated user. Some applications trigger server-side effects during normal page loads -- including audit log entries, pipeline bootstraps, webhook triggers, notification events, or state initialization calls. These are not caused by injection payloads; they are caused by the app itself responding to authenticated navigation.
+
+This was observed during Phase 5 Tier 1 validation: a Next.js CRM issued a POST to a pipeline-initialization endpoint during a crawl-only run with no scan checks active.
+
+Operator guidance:
+
+- Always use a dedicated test account that the client expects to generate activity.
+- Inform the client before crawling that authenticated navigation will produce entries in their access logs and audit trails.
+- Review the crawl summary log for any unexpected POST requests captured during the crawl -- these indicate app-side writes triggered by navigation.
+- If the client's app has sensitive pipeline or workflow triggers, confirm with them which routes to avoid before crawling. Add those routes to the `[crawler]` `blocklist_extra` in `secscan.toml`.
+
+### GitHub-style large-platform SPAs produce thin coverage
+
+Large SaaS platforms (GitHub, Google Workspace, and similar) use JavaScript-heavy rendering patterns where the crawler's declarative navigation strategy captures only the initial page load. Depth-3 traversal on these targets typically yields fewer than 10 unique endpoints. This is a known v0.2 limitation -- not a bug.
+
+For these targets, HAR-based ingest (`secscan ingest --har`) remains the recommended approach. The crawler is most effective on application-style SPAs (dashboards, CRMs, fintech apps) rather than large platform-style products.
+
+### Role-identical endpoint graphs
+
+When crawling an app with multiple roles (e.g. student and admin), the crawler may produce identical or near-identical endpoint graphs if role-gated UI routes are only accessible through interactions the Phase 3 crawler cannot reach (modal-gated content, role-switch flows, deep navigation trees). Verify role coverage manually for high-value authorization testing.
+
 ## 7. Safety and Scope
 
 Only scan targets where SecComply has explicit written authorization. Confirm the allowed domains, environments, test accounts, dates, time windows, and scan rate before running the tool.
