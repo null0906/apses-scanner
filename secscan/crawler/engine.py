@@ -10,7 +10,7 @@ from urllib.parse import parse_qsl, urljoin, urlsplit, urlunsplit
 from uuid import uuid4
 
 import httpx
-from playwright.async_api import async_playwright
+from playwright.async_api import TimeoutError as PlaywrightTimeoutError, async_playwright
 
 from secscan.crawler.blocklist import BlocklistChecker
 from secscan.ingest.har_parser import HarEntry
@@ -21,6 +21,11 @@ EndpointRecord = HarEntry
 
 _LOG = logging.getLogger(__name__)
 _CAPTURE_TYPES = {"xhr", "fetch"}
+_DOCUMENT_METHODS = {"GET", "POST"}
+_STATIC_ASSET_SUFFIXES = (
+    ".js", ".css", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico",
+    ".woff", ".woff2", ".ttf", ".map",
+)
 
 
 @dataclass(frozen=True)
@@ -89,6 +94,8 @@ class CrawlerEngine:
             raise ValueError(f"Target {target_name} has no configured base_url")
 
         captured = _session_request_entries(getattr(self.session, "captured_requests", []) or [], base_url)
+        captured_keys = {_capture_key(entry.method, entry.url) for entry in captured}
+        pending_document_requests: set[tuple[str, str]] = set()
         base_host = _host(base_url)
         queue: deque[tuple[str, int]] = deque()
         queued: set[str] = set()
@@ -120,15 +127,26 @@ class CrawlerEngine:
                         await route.continue_()
 
                 async def capture_request(request):
-                    if request.resource_type not in _CAPTURE_TYPES:
-                        return
                     if _host(request.url) != base_host:
                         _LOG.debug("Dropping out-of-scope crawler request: %s", request.url)
                         return
-                    captured.append(_request_to_entry(request))
+                    if request.resource_type in _CAPTURE_TYPES:
+                        captured.append(_request_to_entry(request))
+                    elif _is_capturable_document_request(request, base_url) and _capture_key(request.method, request.url) not in captured_keys:
+                        pending_document_requests.add(_capture_key(request.method, request.url))
+
+                async def capture_response(response):
+                    request = response.request
+                    key = _capture_key(request.method, request.url)
+                    if key not in pending_document_requests:
+                        return
+                    pending_document_requests.discard(key)
+                    if _is_injectable_document_response(response):
+                        _append_request_entry(captured, captured_keys, request)
 
                 await page.route("**/*", rate_limited_route)
                 page.on("request", capture_request)
+                page.on("response", capture_response)
                 try:
                     async with asyncio.timeout(self.max_time_seconds):
                         while queue:
@@ -261,11 +279,15 @@ async def _interact_with_forms(page: Any, forms: list[FormSpec], blocklist: Bloc
             filled_selectors.append(field.selector)
         if not filled:
             continue
-        async with await rate_limiter.acquire(form.action):
-            if form.submit_selector:
-                await page.click(form.submit_selector)
-            elif filled_selectors:
-                await page.press(filled_selectors[0], "Enter")
+        try:
+            async with await rate_limiter.acquire(form.action):
+                if form.submit_selector:
+                    await page.click(form.submit_selector)
+                elif filled_selectors:
+                    await page.press(filled_selectors[0], "Enter")
+        except Exception as exc:
+            _LOG.info("Skipping non-interactable form submission for %s: %s", form.action, exc)
+            continue
         try:
             await page.wait_for_load_state("networkidle", timeout=3000)
         except Exception:
@@ -367,6 +389,9 @@ async def _return_to_url(page: Any, url: str, base_url: str, rate_limiter: RateL
 async def _goto_page(page: Any, url: str) -> None:
     try:
         await page.goto(url, wait_until="networkidle", timeout=5000)
+    except PlaywrightTimeoutError:
+        await page.wait_for_load_state("domcontentloaded", timeout=3000)
+        await page.wait_for_timeout(1500)
     except TypeError:
         await page.goto(url, wait_until="networkidle")
 
@@ -443,15 +468,50 @@ def _host(url: str) -> str:
 
 def _request_to_entry(request) -> HarEntry:
     post_data = request.post_data or ""
-    mime = _content_type(request.headers)
+    headers = {
+        str(key): str(value)
+        for key, value in (request.headers or {}).items()
+        if str(key).lower() != "cookie"
+    }
+    mime = _content_type(headers)
     return HarEntry(
         method=request.method.upper(),
         url=request.url,
-        headers={str(k): str(v) for k, v in (request.headers or {}).items()},
+        headers=headers,
         query_params={k: v for k, v in parse_qsl(urlsplit(request.url).query, keep_blank_values=True)},
         post_data_mime=mime,
         post_data_text=post_data,
     )
+
+
+def _append_request_entry(captured: list[HarEntry], captured_keys: set[tuple[str, str]], request: Any) -> None:
+    key = _capture_key(request.method, request.url)
+    if key in captured_keys:
+        return
+    captured.append(_request_to_entry(request))
+    captured_keys.add(key)
+
+
+def _capture_key(method: str, url: str) -> tuple[str, str]:
+    return str(method).upper(), str(url)
+
+
+def _is_capturable_document_request(request: Any, base_url: str) -> bool:
+    if request.resource_type != "document" or str(request.method).upper() not in _DOCUMENT_METHODS:
+        return False
+    url = str(request.url)
+    parts = urlsplit(url)
+    path = parts.path.lower()
+    if not _in_scope(url, base_url) or parts.scheme.lower() in {"ws", "wss"}:
+        return False
+    if "socket.io" in parts.netloc.lower() or "socket.io" in path:
+        return False
+    return not path.endswith(_STATIC_ASSET_SUFFIXES)
+
+
+def _is_injectable_document_response(response: Any) -> bool:
+    content_type = _content_type(getattr(response, "headers", {}) or {}).lower()
+    return not content_type or "text/html" in content_type or "application/json" in content_type
 
 
 def _session_request_entries(requests: list[dict[str, Any]], base_url: str) -> list[HarEntry]:

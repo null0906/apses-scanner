@@ -20,7 +20,7 @@ from secscan.checks.sqli import SQLiCheck
 from secscan.checks.ssrf import SSRFCheck, _metadata_evidence
 from secscan.checks.xss import XSSCheck
 from secscan.config import load_config
-from secscan.crawler.engine import ButtonSpec, CrawlerEngine, FormFieldSpec, FormSpec, _crawl_key, _enqueue_url, _extract_dom_surface, _follow_route_hint_buttons, _forced_browse, _host, _interact_with_forms, _load_wordlist, _navigate_in_scope, _request_to_entry
+from secscan.crawler.engine import ButtonSpec, CrawlerEngine, FormFieldSpec, FormSpec, _crawl_key, _enqueue_url, _extract_dom_surface, _follow_route_hint_buttons, _forced_browse, _goto_page, _host, _interact_with_forms, _load_wordlist, _navigate_in_scope, _request_to_entry
 from secscan.ingest.har_parser import HarEntry
 from secscan.ingest.normalizer import normalize_entries
 from secscan.replay.engine import PayloadInjector, ReplayRequest, ReplayResponse
@@ -226,8 +226,13 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
             self.url = url
             self.resource_type = resource_type
             self.method = "GET"
-            self.headers = {"content-type": "application/json"}
+            self.headers = {"content-type": "application/json", "cookie": "stale-session"}
             self.post_data = None
+
+    class FakeResponse:
+        def __init__(self, request, headers):
+            self.request = request
+            self.headers = headers
 
     class FakeRoute:
         def __init__(self, url):
@@ -258,6 +263,13 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
             route = FakeRoute(url)
             await self.route_handler(route)
             assert route.continued is True
+            document = FakeRequest(url, "document")
+            await self.handlers["request"](document)
+            await self.handlers["response"](FakeResponse(document, {"content-type": "text/html"}))
+            for asset in ("app.js", "app.css", "logo.png"):
+                static = FakeRequest(f"http://app.example.test/{asset}", "document")
+                await self.handlers["request"](static)
+                await self.handlers["response"](FakeResponse(static, {"content-type": "text/html"}))
             await self.handlers["request"](FakeRequest("http://app.example.test/api/me?x=1", "xhr"))
             await self.handlers["request"](FakeRequest("http://cdn.example.test/asset.js", "xhr"))
             await self.handlers["request"](FakeRequest("http://app.example.test/app.js", "script"))
@@ -335,12 +347,16 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
         }],
     ))
     records = await crawler.crawl("app")
-    assert len(records) == 3
+    assert len(records) == 5
     assert records[0].method == "POST"
     assert records[0].url == "http://app.example.test/rest/user/login"
     assert records[0].post_data_text == '{"email":"user@example.test","password":"secret"}'
-    assert records[1].url == "http://app.example.test/api/me?x=1"
-    assert records[1].query_params == {"x": "1"}
+    assert records[1].url == "http://app.example.test"
+    assert "cookie" not in {key.lower() for key in records[1].headers}
+    assert records[2].url == "http://app.example.test/api/me?x=1"
+    assert records[2].query_params == {"x": "1"}
+    assert records[3].url == "http://app.example.test/dashboard"
+    assert all(not record.url.endswith((".js", ".css", ".png")) for record in records)
     assert _host("http://app.example.test/a") == "app.example.test"
     surface = crawler.last_dom_surface
     assert surface.links == ["http://app.example.test/dashboard"]
@@ -350,7 +366,7 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
     assert surface.buttons[0].route_hint == "/settings"
     assert crawler.visited_urls == {"http://app.example.test/", "http://app.example.test/dashboard"}
     assert crawler.max_depth_reached == 1
-    assert crawler.last_summary == "Crawl complete: 2 pages visited, 3 endpoints captured, depth 1 reached, stopped by queue_empty."
+    assert crawler.last_summary == "Crawl complete: 2 pages visited, 5 endpoints captured, depth 1 reached, stopped by queue_empty."
 
 
 def test_crawler_queue_deduplicates_hash_routes_and_rejects_external_or_deep_urls():
@@ -387,6 +403,31 @@ async def test_dom_extraction_retries_after_navigation_race():
     surface = await _extract_dom_surface(page, "http://example.test")
     assert surface.links == ["http://example.test/next"]
     assert page.evaluations == 2 and page.waits == 1
+
+
+@pytest.mark.asyncio
+async def test_crawler_navigation_timeout_waits_for_dom_before_extracting():
+    from playwright.async_api import TimeoutError as PlaywrightTimeoutError
+
+    class Page:
+        def __init__(self):
+            self.dom_waits = 0
+            self.settle_waits = []
+
+        async def goto(self, url, wait_until=None, timeout=None):
+            raise PlaywrightTimeoutError("network idle timed out")
+
+        async def wait_for_load_state(self, state, timeout=None):
+            assert state == "domcontentloaded"
+            self.dom_waits += 1
+
+        async def wait_for_timeout(self, timeout):
+            self.settle_waits.append(timeout)
+
+    page = Page()
+    await _goto_page(page, "http://example.test")
+    assert page.dom_waits == 1
+    assert page.settle_waits == [1500]
 
 
 @pytest.mark.asyncio
@@ -625,6 +666,29 @@ async def test_crawler_form_interaction_submits_standalone_inputs_with_enter():
     assert page.fills == [("#q", "secscan_test")]
     assert page.clicks == []
     assert page.presses == [("#q", "Enter")]
+
+
+@pytest.mark.asyncio
+async def test_crawler_form_submission_timeout_does_not_abort_crawl():
+    from secscan.crawler.blocklist import BlocklistChecker
+    from secscan.replay.ratelimit import RateLimiter
+
+    class Page:
+        async def fill(self, selector, value):
+            return None
+
+        async def press(self, selector, key):
+            raise TimeoutError("stale selector")
+
+        async def wait_for_load_state(self, state, timeout=None):
+            raise AssertionError("submission failure should skip this wait")
+
+    await _interact_with_forms(
+        Page(),
+        [FormSpec(action="http://example.test/search", method="GET", fields=[FormFieldSpec("q", "text", "", "#q")])],
+        BlocklistChecker(),
+        RateLimiter(max_concurrency=1, rate_limit_rps=100),
+    )
 
 
 def test_parse_har_and_request_helpers(tmp_path):

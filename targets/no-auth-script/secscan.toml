@@ -1,0 +1,3 @@
+[target]
+name="no-auth-script"
+base_url="http://example.test"

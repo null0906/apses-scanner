@@ -1,0 +1,46 @@
+# secscan.toml — per-target configuration
+[target]
+name = "dvwa"
+base_url = "http://localhost:4280"
+notes = ""
+
+[scan]
+checks = ["sqli", "xss", "ssrf", "authz", "redirect", "data", "headers", "auth", "jwt"]
+# Deliberately conservative defaults for unknown production targets. Operators may raise these via this file or --rate-limit/--max-concurrency only for targets known to tolerate load with client sign-off.
+max_concurrency = 2
+rate_limit_rps = 2
+max_retries = 2
+triage = false
+
+[auth]
+script = "auth_script.py"
+login_url_pattern = "/login"
+session_expiry_minutes = 30
+
+[crawler]
+# Conservative crawl bounds. Raise only for targets known to tolerate broader navigation.
+max_depth = 3
+max_pages = 50
+max_time_seconds = 1800
+# Sequential HTTP probes for common paths after the browser crawl completes.
+forced_browsing_enabled = true
+# Optional custom wordlist path. Leave empty to use secscan/crawler/wordlist.txt.
+wordlist_path = ""
+# Full scan mode is blocked for non-local hosts unless explicitly listed here.
+# This is an ethical pre-flight gate; crawling remains allowed without authorization.
+authorized_hosts = []
+# Extra destructive-action patterns to skip during crawler form interaction.
+# These add to the default blocklist: delete/remove/destroy/deactivate/disable/cancel/revoke/terminate/purge/wipe/reset/logout/signout.
+blocklist_extra = []
+# Dangerous: if true, disables the default destructive-action blocklist and uses only blocklist_extra.
+# Keep false unless the target config explicitly needs a custom allowlist and the operator accepts the risk.
+blocklist_override = false
+
+[llm]
+max_input_tokens = 4000
+truncation_chars = 2048
+model = "claude-opus-4-5"
+
+[logging]
+level = "INFO"
+format = "console"
