@@ -4,14 +4,18 @@ import asyncio
 import logging
 from collections import deque
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qsl, urljoin, urlsplit, urlunsplit
+from uuid import uuid4
 
+import httpx
 from playwright.async_api import async_playwright
 
 from secscan.crawler.blocklist import BlocklistChecker
 from secscan.ingest.har_parser import HarEntry
 from secscan.replay.ratelimit import RateLimiter
+from secscan.utils.http import SPAShellFingerprint, fingerprint_spa_shell, matches_spa_shell
 
 EndpointRecord = HarEntry
 
@@ -71,10 +75,13 @@ class CrawlerEngine:
         self.max_depth = int(getattr(crawler, "max_depth", 3))
         self.max_pages = int(getattr(crawler, "max_pages", 50))
         self.max_time_seconds = int(getattr(crawler, "max_time_seconds", 1800))
+        self.wordlist_path = str(getattr(crawler, "wordlist_path", "") or "")
+        self.forced_browsing_enabled = bool(getattr(crawler, "forced_browsing_enabled", crawler is not None))
         self.last_dom_surface = DOMSurface()
         self.visited_urls: set[str] = set()
         self.max_depth_reached = 0
         self.last_summary = ""
+        self.last_forced_browsing_summary = ""
 
     async def crawl(self, target_name: str) -> list[EndpointRecord]:
         base_url = getattr(getattr(self.config, "target", None), "base_url", "")
@@ -88,6 +95,7 @@ class CrawlerEngine:
         self.visited_urls = set()
         self.max_depth_reached = 0
         self.last_summary = ""
+        self.last_forced_browsing_summary = ""
         _enqueue_url(queue, queued, self.visited_urls, base_url, 0, base_url, self.max_depth)
         stop_reason = "queue_empty"
 
@@ -166,6 +174,13 @@ class CrawlerEngine:
             finally:
                 await browser.close()
 
+        if self.forced_browsing_enabled:
+            wordlist = _load_wordlist(self.wordlist_path)
+            discoveries = await _forced_browse(base_url, wordlist, self.session, self.rate_limiter)
+            captured.extend(discoveries)
+            self.last_forced_browsing_summary = f"Forced browsing: {len(wordlist)} paths probed, {len(discoveries)} discovered."
+            _LOG.info(self.last_forced_browsing_summary)
+
         self.last_summary = (
             f"Crawl complete: {len(self.visited_urls)} pages visited, {len(captured)} endpoints captured, "
             f"depth {self.max_depth_reached} reached, stopped by {stop_reason}."
@@ -175,7 +190,19 @@ class CrawlerEngine:
 
 
 async def _extract_dom_surface(page: Any, base_url: str) -> DOMSurface:
-    raw = await page.evaluate(_DOM_EXTRACTION_SCRIPT, base_url)
+    raw = None
+    for attempt in range(2):
+        try:
+            raw = await page.evaluate(_DOM_EXTRACTION_SCRIPT, base_url)
+            break
+        except Exception as exc:
+            if attempt:
+                _LOG.info("Skipping DOM extraction after navigation race: %s", exc)
+                return DOMSurface()
+            try:
+                await page.wait_for_load_state("domcontentloaded", timeout=3000)
+            except Exception:
+                pass
     raw = raw or {}
     return DOMSurface(
         links=_same_domain_urls(raw.get("links", []), base_url),
@@ -443,6 +470,67 @@ def _session_request_entries(requests: list[dict[str, Any]], base_url: str) -> l
             post_data_text=str(request.get("post_data", "") or ""),
         ))
     return entries
+
+
+def _load_wordlist(override_path: str = "") -> list[str]:
+    path = Path(override_path).expanduser() if override_path else Path(__file__).with_name("wordlist.txt")
+    return [
+        line if line.startswith("/") else f"/{line}"
+        for raw in path.read_text(encoding="utf-8").splitlines()
+        if (line := raw.strip()) and not line.startswith("#")
+    ]
+
+
+async def _forced_browse(
+    base_url: str,
+    paths: list[str],
+    session: Any,
+    rate_limiter: RateLimiter,
+    client: Any | None = None,
+) -> list[HarEntry]:
+    discoveries: list[HarEntry] = []
+    owns_client = client is None
+    if client is None:
+        session_kwargs = session.to_httpx_kwargs() if hasattr(session, "to_httpx_kwargs") else {}
+        client = httpx.AsyncClient(timeout=10, follow_redirects=False, verify=False, **session_kwargs)
+    try:
+        shell = await _spa_shell_baseline(base_url, client, rate_limiter)
+        for path in paths:
+            url = urljoin(f"{base_url.rstrip('/')}/", path.lstrip("/"))
+            try:
+                async with await rate_limiter.acquire(url):
+                    response = await client.get(url)
+            except Exception as exc:
+                _LOG.info("Forced-browsing probe failed for %s: %s", url, exc)
+                continue
+            if 200 <= response.status_code < 300 or 500 <= response.status_code < 600:
+                if shell and matches_spa_shell(shell, response.headers, response.text):
+                    continue
+                discoveries.append(HarEntry(
+                    method="GET",
+                    url=url,
+                    headers={},
+                    query_params={},
+                    response_status=response.status_code,
+                    response_headers={str(k): str(v) for k, v in response.headers.items()},
+                    response_body=response.text,
+                ))
+    finally:
+        if owns_client:
+            await client.aclose()
+    return discoveries
+
+
+async def _spa_shell_baseline(base_url: str, client: Any, rate_limiter: RateLimiter) -> SPAShellFingerprint | None:
+    token = uuid4().hex
+    url = urljoin(f"{base_url.rstrip('/')}/", f"secscan-nonexistent-probe-{token}")
+    try:
+        async with await rate_limiter.acquire(url):
+            response = await client.get(url)
+    except Exception as exc:
+        _LOG.info("SPA-shell baseline probe failed for %s: %s", url, exc)
+        return None
+    return fingerprint_spa_shell(response.headers, response.text)
 
 
 def _content_type(headers: dict[str, str]) -> str:

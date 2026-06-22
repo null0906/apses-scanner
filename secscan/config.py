@@ -30,6 +30,9 @@ class CrawlerConfig:
     max_depth: int = 3
     max_pages: int = 50
     max_time_seconds: int = 1800
+    wordlist_path: str = ""
+    forced_browsing_enabled: bool = True
+    authorized_hosts: list[str] = field(default_factory=list)
 
 @dataclass(frozen=True)
 class LLMConfig:
@@ -72,6 +75,9 @@ def load_config(target_name: str, targets_dir: Path | None = None) -> Config:
             c.get("max_depth", 3),
             c.get("max_pages", 50),
             c.get("max_time_seconds", 1800),
+            c.get("wordlist_path", ""),
+            c.get("forced_browsing_enabled", True),
+            c.get("authorized_hosts", []),
         ),
         llm=LLMConfig(l.get("max_input_tokens", 4000), l.get("truncation_chars", 2048), l.get("model", "claude-opus-4-5")),
         log=LogConfig(lg.get("level", "INFO"), lg.get("format", "console")),

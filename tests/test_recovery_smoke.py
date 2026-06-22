@@ -20,7 +20,7 @@ from secscan.checks.sqli import SQLiCheck
 from secscan.checks.ssrf import SSRFCheck, _metadata_evidence
 from secscan.checks.xss import XSSCheck
 from secscan.config import load_config
-from secscan.crawler.engine import ButtonSpec, CrawlerEngine, FormFieldSpec, FormSpec, _crawl_key, _enqueue_url, _follow_route_hint_buttons, _host, _interact_with_forms, _navigate_in_scope, _request_to_entry
+from secscan.crawler.engine import ButtonSpec, CrawlerEngine, FormFieldSpec, FormSpec, _crawl_key, _enqueue_url, _extract_dom_surface, _follow_route_hint_buttons, _forced_browse, _host, _interact_with_forms, _load_wordlist, _navigate_in_scope, _request_to_entry
 from secscan.ingest.har_parser import HarEntry
 from secscan.ingest.normalizer import normalize_entries
 from secscan.replay.engine import PayloadInjector, ReplayRequest, ReplayResponse
@@ -169,6 +169,8 @@ def test_session_helpers_config_reports_and_utils(tmp_path):
     assert config.scan.rate_limit_rps == 2 and config.scan.max_concurrency == 2
     assert config.crawler.blocklist_extra == [] and config.crawler.blocklist_override is False
     assert (config.crawler.max_depth, config.crawler.max_pages, config.crawler.max_time_seconds) == (3, 50, 1800)
+    assert config.crawler.forced_browsing_enabled is True and config.crawler.wordlist_path == ""
+    assert config.crawler.authorized_hosts == []
     assert guidance("sqli") and prompt_for("sqli")
 
     class Result:
@@ -363,6 +365,97 @@ def test_crawler_queue_deduplicates_hash_routes_and_rejects_external_or_deep_url
     assert not _enqueue_url(queue, queued, visited, "http://external.example/search", 1, base_url, 3)
     assert not _enqueue_url(queue, queued, visited, "http://app.example.test/#/deep", 4, base_url, 3)
     assert list(queue) == [("http://app.example.test/#/search", 1)]
+
+
+@pytest.mark.asyncio
+async def test_dom_extraction_retries_after_navigation_race():
+    class Page:
+        def __init__(self):
+            self.evaluations = 0
+            self.waits = 0
+
+        async def evaluate(self, script, base_url):
+            self.evaluations += 1
+            if self.evaluations == 1:
+                raise RuntimeError("Execution context was destroyed")
+            return {"links": ["/next"], "forms": [], "buttons": []}
+
+        async def wait_for_load_state(self, state, timeout=None):
+            self.waits += 1
+
+    page = Page()
+    surface = await _extract_dom_surface(page, "http://example.test")
+    assert surface.links == ["http://example.test/next"]
+    assert page.evaluations == 2 and page.waits == 1
+
+
+@pytest.mark.asyncio
+async def test_forced_browsing_discovers_2xx_5xx_skips_400_404_and_rate_limits():
+    class Response:
+        def __init__(self, status, text):
+            self.status_code = status
+            self.headers = {"content-type": "text/plain"}
+            self.text = text
+
+    class Client:
+        async def get(self, url):
+            path = url.replace("http://example.test", "")
+            if "secscan-nonexistent-probe-" in path or path == "/shell":
+                return Response(200, "<html><script>app shell</script></html>")
+            statuses = {
+                "/unique": (200, '{"real":true}'),
+                "/error": (500, "server error"),
+                "/bad": (400, "bad"),
+                "/missing": (404, "missing"),
+            }
+            status, text = statuses[path]
+            return Response(status, text)
+
+    class Lease:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+
+    class Limiter:
+        def __init__(self):
+            self.urls = []
+
+        async def acquire(self, url):
+            self.urls.append(url)
+            return Lease()
+
+    limiter = Limiter()
+    paths = ["/shell", "/unique", "/error", "/bad", "/missing"]
+    found = await _forced_browse("http://example.test", paths, Session(), limiter, Client())
+    assert [(entry.url, entry.response_status) for entry in found] == [
+        ("http://example.test/unique", 200),
+        ("http://example.test/error", 500),
+    ]
+    assert len(limiter.urls) == len(paths) + 1
+    assert limiter.urls[1:] == [f"http://example.test{path}" for path in paths]
+
+
+def test_forced_browsing_wordlist_and_disable_switch():
+    assert len(_load_wordlist()) == 50
+
+    class Target:
+        base_url = "http://example.test"
+
+    class Scan:
+        max_concurrency = 1
+        rate_limit_rps = 100
+
+    class Crawler:
+        forced_browsing_enabled = False
+
+    class Config:
+        target = Target()
+        scan = Scan()
+        crawler = Crawler()
+
+    assert CrawlerEngine(Config(), Session()).forced_browsing_enabled is False
 
 
 @pytest.mark.asyncio
@@ -707,6 +800,30 @@ def test_cli_run_crawl_only_flag_skips_checks(monkeypatch):
     result = CliRunner().invoke(app, ["run", "--target", "t", "--crawl-only"])
     assert result.exit_code == 0
     assert "Crawl-only mode" in result.output
+
+
+def test_cli_authorized_hosts_preflight_blocks_remote_and_allows_local_or_listed():
+    import typer
+    from secscan.cli.commands import _require_authorized_host
+
+    @dataclass
+    class Target:
+        base_url: str
+
+    @dataclass
+    class Crawler:
+        authorized_hosts: list[str]
+
+    @dataclass
+    class Config:
+        target: Target
+        crawler: Crawler
+
+    with pytest.raises(typer.BadParameter, match="not in the authorized_hosts"):
+        _require_authorized_host(Config(Target("https://client.example"), Crawler([])))
+    _require_authorized_host(Config(Target("http://localhost:3000"), Crawler([])))
+    _require_authorized_host(Config(Target("http://127.0.0.1:8080"), Crawler([])))
+    _require_authorized_host(Config(Target("https://client.example"), Crawler(["client.example"])))
 
 
 def test_blocklist_checker_blocks_default_destructive_patterns():

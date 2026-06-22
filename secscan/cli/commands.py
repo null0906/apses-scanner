@@ -6,6 +6,7 @@ import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import typer
 from sqlalchemy import select
@@ -118,6 +119,9 @@ async def _ingest(target_name: str, har: Path | None = None, crawl: bool = False
         if surface is not None:
             typer.echo(f"DOM extraction: {len(surface.links)} links, {len(surface.forms)} forms, {len(surface.buttons)} buttons found.")
         summary = getattr(crawler, "last_summary", "")
+        forced_summary = getattr(crawler, "last_forced_browsing_summary", "")
+        if forced_summary:
+            typer.echo(forced_summary)
         if summary:
             typer.echo(summary)
     elif har:
@@ -167,6 +171,7 @@ async def _run(target_name: str, checks_csv: str | None, output_dir: Path, rate_
         if crawl_only:
             typer.echo(f"Crawl-only mode: {len(endpoints)} endpoints discovered, no checks run.")
             return 0
+        _require_authorized_host(config)
         scan = Scan(target_id=target.id, status="running", summary={}, checks_enabled=selected, triage_enabled=False, config={})
         db.add(scan); await db.flush()
         try:
@@ -204,6 +209,23 @@ async def _run(target_name: str, checks_csv: str | None, output_dir: Path, rate_
     await engine.dispose()
     typer.echo(f"Scan complete: risk={result.risk_score} findings={len(result.findings)}")
     return 1 if high_or_critical else 0
+
+
+def _require_authorized_host(config: Any) -> None:
+    base_url = str(getattr(getattr(config, "target", None), "base_url", "") or "")
+    hostname = (urlsplit(base_url).hostname or "").lower()
+    authorized = {
+        str(host).strip().lower()
+        for host in (getattr(getattr(config, "crawler", None), "authorized_hosts", []) or [])
+        if str(host).strip()
+    }
+    if hostname in {"localhost", "127.0.0.1"} or hostname in authorized:
+        return
+    raise typer.BadParameter(
+        f"ERROR: {hostname or base_url} is not in the authorized_hosts list in secscan.toml. "
+        "Full scan mode requires explicit authorization. Add the hostname to [crawler] "
+        "authorized_hosts to proceed, or use --crawl-only for navigation-only mode."
+    )
 
 
 async def _report(target_name: str, format: str, output: Path | None) -> None:
