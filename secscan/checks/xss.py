@@ -7,7 +7,12 @@ from .payloads.xss import REFLECTED
 
 class XSSCheck(Check):
     name = "xss"
-    description = "Reflected XSS checks for captured API inputs."
+    description = (
+        "Reflected XSS detection for server-side HTML responses. Detects payloads "
+        "reflected directly in HTML response bodies. Does not detect DOM-based XSS "
+        "where payloads are rendered client-side by JavaScript frameworks -- that "
+        "requires Playwright DOM inspection (v0.3)."
+    )
 
     async def run(self, endpoint: Endpoint, session, replay) -> AsyncIterator[Finding]:
         for param in injectable_params(endpoint):

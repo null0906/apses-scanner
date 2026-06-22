@@ -19,6 +19,7 @@ Latest Juice Shop tuning showed real findings from `sqli`, `headers`, and `data`
 Read this before using SecScan on a client target. These are not edge cases; they are v0.1 boundaries.
 
 - XSS: v0.1 mostly tests the captured JSON/API surface. Reflected or DOM XSS that only appears after the SPA renders data in the browser is not reliably detected. Test XSS manually in the rendered app.
+  More specifically: the XSS check detects server-side reflected XSS where the payload appears in an HTML response body. It does not detect DOM-based XSS where a JavaScript framework (Angular, React, Vue) renders the payload client-side. Most modern SPAs use DOM-based XSS patterns. Always test XSS manually in the rendered application.
 - JWT attacks: the JWT check captures bearer tokens and replays token mutations against authenticated endpoints. It only finds targets that accept tampered tokens, such as `alg:none`, weak secrets, or accepted claim tampering. It does not find logic-level JWT authorization flaws.
 - SSRF: v0.1 does not have production callback infrastructure wired for real OOB confirmation. SSRF remains manual unless callback infrastructure is explicitly configured and verified.
 - Open redirect: only captured redirect-like parameters are tested. If the HAR does not include a redirect parameter, SecScan will not discover one.
