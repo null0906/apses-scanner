@@ -210,6 +210,7 @@ After v0.2 ships and runs on real targets, v0.3 candidates are:
 - OOB callback infrastructure for working SSRF.
 - New vuln classes: XXE, SSTI, deeper NoSQL, GraphQL, mass assignment, JWT logic flaws.
 - JS bundle parsing for endpoint discovery beyond what the crawler clicks.
+- GitHub-style large-platform SPA depth: large platform SPAs (GitHub, Google Workspace) return thin crawler coverage due to JavaScript-heavy rendering beyond declarative navigation. Improving depth on these targets requires JS interaction inference or scrolling-based discovery -- v0.3 research item.
 - Web UI for operating multiple engagements at SecComply scale.
 
 None are committed. v0.3 scope finalizes after v0.2 ships and produces its own real-target memo.
