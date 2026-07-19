@@ -1,7 +1,7 @@
 # SecScan v0.2 — BRD + FRD
 
 - Owner: Atharva Sardesai
-- Status: Draft, locked pending validation gate setup
+- Status: SHIPPED — merged to main as v0.2.0, all three validation tiers passed
 - Capacity: ~20 hrs/week (same as v0.1)
 - Build window estimate: 8.5-10.5 weeks
 - Predecessor: v0.1 shipped, in colleague use, see `SECSCAN_v0.1_BRD_FRD.md`
@@ -218,8 +218,10 @@ None are committed. v0.3 scope finalizes after v0.2 ships and produces its own r
 
 ## 12. Sign-off
 
-- [ ] Atharva — primary builder
-- [ ] Sanil — informed, with 15-minute sync before v0.2 build starts and explicit sign-off on Tier 3 SecComply staging scan
-- [ ] Section 4 scope final lock confirmed before Phase 1 begins
+- [x] Atharva — primary builder
+- [x] Sanil — complete ownership delegated, Tier 3 staging scan pre-approved
+- [x] Section 4 scope final lock confirmed before Phase 1 begins
+
+Shipped: v0.2.0 — July 2026. Merged to main after Phase 6 validation: Juice Shop regression clean (sqli=3, 25 endpoints), DVWA reflected XSS confirmed (3 findings), crAPI JWT exposure finding confirmed. Known limitation: React SPA depth (GitHub-style targets, crAPI dashboard) produces thin endpoint graphs due to JavaScript-driven navigation — documented in README and v0.3 backlog.
 
 Any change to v0.2 scope after lock requires written re-approval and a corresponding timeline adjustment, same discipline as v0.1.
