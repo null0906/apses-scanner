@@ -1,25 +1,25 @@
-# SecScan v0.1
+# SecScan v0.2
 
 ## 1. What SecScan Is
 
-SecScan is an internal authenticated DAST tool for SecComply VAPT work. It takes a captured browsing session, normalizes the endpoints from a HAR file, bootstraps authentication with a Playwright `auth_script.py`, replays the captured API surface, and runs vulnerability checks against it. It is a force-multiplier for manual VAPT, not a replacement for manual testing. A clean SecScan report means "SecScan did not find issues in the captured surface"; it does not mean the application is secure.
+SecScan is an internal authenticated DAST tool for SecComply VAPT work. It takes a captured browsing session, normalizes the endpoints from a HAR file, bootstraps authentication with a Playwright `auth_script.py`, replays the captured API surface, and runs vulnerability checks against it. It is a force-multiplier for manual VAPT, not a replacement for manual testing. A clean SecScan report means "SecScan did not find issues in the captured surface"; it does not mean the application is secure. As of v0.2, SecScan also includes an authenticated crawler that can discover pages and exercise inputs automatically, replacing the manual HAR capture step for supported targets.
 
-## 2. What It Reliably Finds in v0.1
+## 2. What It Reliably Finds
 
-SecScan v0.1 is strongest on captured API endpoints and deterministic response analysis.
+SecScan is strongest on captured or crawled API endpoints and deterministic response analysis.
 
 - SQL injection on captured, injectable parameters in query strings, form fields, and JSON body fields. Boolean-based and error-based SQLi are confirmed working on OWASP Juice Shop.
 - Missing or misconfigured security headers, including CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, and unsafe CORS/header patterns.
 - Sensitive data exposure in responses, including JWTs, high-entropy secrets, verbose error leakage, and PII-style patterns.
+- Broader API surface on targets with accessible routes: v0.2's crawler discovers endpoints automatically by navigating the rendered application, following same-domain links, submitting safe form values, and running a forced-browsing wordlist pass. Validated on Juice Shop (25 endpoints vs 14 from manual HAR), DVWA (reflected XSS confirmed), and a production CRM (29 authenticated API endpoints discovered).
 
 Latest Juice Shop tuning showed real findings from `sqli`, `headers`, and `data`.
 
 ## 3. What It Does Not Find Yet
 
-Read this before using SecScan on a client target. These are not edge cases; they are v0.1 boundaries.
+Read this before using SecScan on a client target. These are not edge cases; they are current boundaries.
 
-- XSS: v0.1 mostly tests the captured JSON/API surface. Reflected or DOM XSS that only appears after the SPA renders data in the browser is not reliably detected. Test XSS manually in the rendered app.
-  More specifically: the XSS check detects server-side reflected XSS where the payload appears in an HTML response body. It does not detect DOM-based XSS where a JavaScript framework (Angular, React, Vue) renders the payload client-side. Most modern SPAs use DOM-based XSS patterns. Always test XSS manually in the rendered application.
+- XSS: the XSS check detects server-side reflected XSS where the payload appears in an HTML response body (confirmed working on DVWA). It does not detect DOM-based XSS where a JavaScript framework (Angular, React, Vue) renders the payload client-side — most modern SPAs use DOM-based patterns. Always test XSS manually in the rendered application. DOM-based XSS detection via Playwright is deferred to v0.3.
 - JWT attacks: the JWT check captures bearer tokens and replays token mutations against authenticated endpoints. It only finds targets that accept tampered tokens, such as `alg:none`, weak secrets, or accepted claim tampering. It does not find logic-level JWT authorization flaws.
 - SSRF: v0.1 does not have production callback infrastructure wired for real OOB confirmation. SSRF remains manual unless callback infrastructure is explicitly configured and verified.
 - Open redirect: only captured redirect-like parameters are tested. If the HAR does not include a redirect parameter, SecScan will not discover one.
@@ -267,7 +267,7 @@ A thorough HAR capture for a real engagement typically takes 30-60 minutes of ac
 
 If SecScan's report is unexpectedly empty or thin, check HAR coverage first. Re-capture with more active interaction. This is far more often the cause than a tool bug.
 
-Roadmap note: v0.2 will add an automated crawler so SecScan can discover pages and exercise inputs on its own. Until then, HAR quality is the single biggest factor in scanner output quality.
+Crawler note: v0.2 can discover pages and exercise inputs automatically for supported targets. HAR quality still matters when the crawler is a poor fit, especially for complex workflows and large-platform SPAs.
 
 ### Capture a HAR
 
@@ -293,7 +293,7 @@ Start conservatively on real targets:
 secscan run --target acme-fintech --checks sqli,headers,data --rate-limit 2 --max-concurrency 2
 ```
 
-Run all v0.1 checks when scope and rate are approved:
+Run all checks when scope and rate are approved:
 
 ```bash
 secscan run --target acme-fintech --checks sqli,xss,ssrf,authz,redirect,data,headers,auth,jwt --rate-limit 2 --max-concurrency 2
@@ -314,6 +314,78 @@ secscan report --target acme-fintech --format json --output acme-fintech-secscan
 ```
 
 Read the report as triage input. Each finding includes evidence, a PoC-style request, remediation guidance, and a manual verification playbook. Confirm findings by hand before client reporting.
+
+## v0.2 Crawler Workflow (alternative to HAR capture)
+
+Instead of capturing a HAR manually, v0.2 can crawl the target automatically. The crawler authenticates using the same `auth_script.py`, navigates the rendered application, and writes to the same endpoint graph the HAR ingest produces. Downstream scan commands are unchanged.
+
+### When to use the crawler vs HAR
+
+Use `--crawl` when:
+
+- The target is a standard SPA or server-rendered app with accessible navigation links and forms.
+- You want broader coverage without spending 30-60 minutes manually browsing.
+- Running the SecComply CRM, a GRC dashboard, or similar internal tooling.
+
+Use `--har` when:
+
+- The target has complex auth flows (MFA, SSO, CAPTCHA) that the crawler cannot complete.
+- The target has large-platform SPA navigation (GitHub, Google Workspace) where the crawler produces thin coverage.
+- You need precise control over exactly which workflows are tested (e.g. a specific multi-step checkout flow).
+- The crawler crashes or times out on the target — fall back to HAR, it always works.
+
+### Crawl commands
+
+Init (same as before):
+
+```bash
+secscan init --target acme-fintech --base-url https://app.acme.example
+```
+
+Write `auth_script.py` (same as before — the crawler reuses it).
+
+Ingest via crawler instead of HAR:
+
+```bash
+secscan ingest --crawl --target acme-fintech
+```
+
+Run capability-only check first (no injection payloads):
+
+```bash
+secscan run --target acme-fintech --crawl-only
+```
+
+This navigates and builds the endpoint graph without sending any vulnerability payloads. Use this for third-party targets where you have a legitimate account but no written authorization for full scanning.
+
+Run full scan (requires `authorized_hosts` entry in `secscan.toml`):
+
+```bash
+secscan run --target acme-fintech \
+  --checks sqli,xss,ssrf,authz,redirect,data,headers,auth,jwt \
+  --rate-limit 2 --max-concurrency 2
+```
+
+### Crawler configuration (`secscan.toml` `[crawler]` section)
+
+```toml
+[crawler]
+max_depth = 3              # how many link-hops from base_url
+max_pages = 50             # hard page cap
+max_time_seconds = 1800    # 30-minute wall-clock limit
+forced_browsing_enabled = true
+authorized_hosts = ["localhost", "127.0.0.1"]
+# Add your target's hostname here before running full scans:
+# authorized_hosts = ["localhost", "app.acme.example"]
+```
+
+### Known crawler limitations
+
+- React/Angular SPA navigation: the crawler follows declarative links and form submissions. JavaScript-only navigation (modal-gated routes, drag-and-drop, infinite scroll) is not reached. If the crawler produces fewer than 10 endpoints on a rich SPA, fall back to HAR.
+- Large-platform SPAs (GitHub, Google Workspace): crawler produces thin coverage (1-9 endpoints) despite successful authentication. Use HAR for these targets.
+- Ant Design / Material UI inputs: some React component library inputs require `page.type()` with keystroke delay in the `auth_script.py` rather than `page.fill()`. If auth fails on a React app, try replacing `page.fill()` with `page.click()` + `page.type()` with `delay=50`.
+- Application-side effects: authenticated crawling may trigger server-side writes (audit logs, pipeline bootstraps, notifications) as a side effect of normal page navigation. Always use a dedicated test account and inform the client.
+- `authorized_hosts` enforcement: full scan mode (`--checks`) against a hostname not in `authorized_hosts` is blocked by default. Add the hostname explicitly before scanning.
 
 ## 6. Where the Operator Takes Over
 
@@ -500,4 +572,4 @@ Re-capture while actively using the feature, then re-ingest and re-run.
 
 ## 9. Current Status and Roadmap
 
-SecScan v0.1 is a captured-surface authenticated scanner: it tests what the operator browsed and submitted, then produces findings and triage guidance for manual verification. v0.2 is planned to add an autonomous authenticated crawler so the tool can discover pages and inputs itself instead of relying on a hand-captured HAR. That crawler is what should unlock reliable SPA-rendered XSS testing and broader application coverage.
+SecScan v0.1 was the captured-surface scanner: it tested what the operator browsed and submitted via a manual HAR. SecScan v0.2 adds an authenticated Playwright crawler that discovers pages and exercises inputs automatically, unlocking broader API coverage and server-side reflected XSS detection. v0.3 is planned to add DOM-based XSS detection via Playwright, OOB callback infrastructure for SSRF, new vulnerability classes (GraphQL, XXE, JWT logic flaws), and improved JS-driven SPA navigation depth for large-platform targets.
