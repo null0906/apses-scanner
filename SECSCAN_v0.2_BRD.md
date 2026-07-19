@@ -80,7 +80,7 @@ When the target hostname is not on a configured "owned infrastructure / authoriz
 v0.2 ships when all are true:
 
 1. Crawler runs end-to-end on Juice Shop, populating the endpoint graph without operator-supplied HAR.
-2. XSS fires on Juice Shop search as a consequence of the crawler typing into the box. If this does not happen, the crawler is not working as intended.
+2. XSS check correctly fires on a target with server-side reflected XSS in HTML responses. DOM-based XSS (as found in Juice Shop's Angular search) requires Playwright DOM inspection and is deferred to v0.3. The v0.2 XSS check is validated against DVWA's reflected XSS challenge or equivalent HTML-reflecting target.
 3. At least 50% more endpoints are discovered than the manual HAR captured. Juice Shop manual HAR had roughly 14 endpoints; crawler should find 25+.
 4. Crawler completes capability validation on Tier 1 authenticated public apps in Section 5.5 without crashing.
 5. Crawler + full scan completes on crAPI and surfaces at least one real finding v0.1's HAR approach would have missed.
@@ -210,6 +210,8 @@ After v0.2 ships and runs on real targets, v0.3 candidates are:
 - OOB callback infrastructure for working SSRF.
 - New vuln classes: XXE, SSTI, deeper NoSQL, GraphQL, mass assignment, JWT logic flaws.
 - JS bundle parsing for endpoint discovery beyond what the crawler clicks.
+- GitHub-style large-platform SPA depth: large platform SPAs (GitHub, Google Workspace) return thin crawler coverage due to JavaScript-heavy rendering beyond declarative navigation. Improving depth on these targets requires JS interaction inference or scrolling-based discovery -- v0.3 research item.
+- DOM-based XSS detection: the v0.2 XSS check detects reflected XSS in HTML responses via httpx replay. DOM-based XSS (client-side rendering of payloads by Angular/React/Vue) requires Playwright to navigate to the rendered page, type payloads into real inputs, and inspect the DOM for execution. This is a v0.3 feature requiring the crawler and check layers to share a Playwright context.
 - Web UI for operating multiple engagements at SecComply scale.
 
 None are committed. v0.3 scope finalizes after v0.2 ships and produces its own real-target memo.

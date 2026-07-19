@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -19,7 +20,7 @@ from secscan.checks.sqli import SQLiCheck
 from secscan.checks.ssrf import SSRFCheck, _metadata_evidence
 from secscan.checks.xss import XSSCheck
 from secscan.config import load_config
-from secscan.crawler.engine import CrawlerEngine, _host, _request_to_entry
+from secscan.crawler.engine import ButtonSpec, CrawlerEngine, FormFieldSpec, FormSpec, _crawl_key, _enqueue_url, _extract_dom_surface, _follow_route_hint_buttons, _forced_browse, _goto_page, _host, _interact_with_forms, _load_wordlist, _navigate_in_scope, _request_to_entry
 from secscan.ingest.har_parser import HarEntry
 from secscan.ingest.normalizer import normalize_entries
 from secscan.replay.engine import PayloadInjector, ReplayRequest, ReplayResponse
@@ -166,6 +167,10 @@ def test_session_helpers_config_reports_and_utils(tmp_path):
     assert _high_entropy("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") is not None
     config = load_config("missing-target", targets_dir=tmp_path)
     assert config.scan.rate_limit_rps == 2 and config.scan.max_concurrency == 2
+    assert config.crawler.blocklist_extra == [] and config.crawler.blocklist_override is False
+    assert (config.crawler.max_depth, config.crawler.max_pages, config.crawler.max_time_seconds) == (3, 50, 1800)
+    assert config.crawler.forced_browsing_enabled is True and config.crawler.wordlist_path == ""
+    assert config.crawler.authorized_hosts == []
     assert guidance("sqli") and prompt_for("sqli")
 
     class Result:
@@ -221,8 +226,13 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
             self.url = url
             self.resource_type = resource_type
             self.method = "GET"
-            self.headers = {"content-type": "application/json"}
+            self.headers = {"content-type": "application/json", "cookie": "stale-session"}
             self.post_data = None
+
+    class FakeResponse:
+        def __init__(self, request, headers):
+            self.request = request
+            self.headers = headers
 
     class FakeRoute:
         def __init__(self, url):
@@ -236,6 +246,10 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
         def __init__(self):
             self.handlers = {}
             self.route_handler = None
+            self.fills = []
+            self.clicks = []
+            self.gotos = []
+            self.url = "about:blank"
 
         async def route(self, pattern, handler):
             self.route_handler = handler
@@ -244,22 +258,60 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
             self.handlers[event] = handler
 
         async def goto(self, url, wait_until=None):
+            self.gotos.append(url)
+            self.url = url
             route = FakeRoute(url)
             await self.route_handler(route)
             assert route.continued is True
+            document = FakeRequest(url, "document")
+            await self.handlers["request"](document)
+            await self.handlers["response"](FakeResponse(document, {"content-type": "text/html"}))
+            for asset in ("app.js", "app.css", "logo.png"):
+                static = FakeRequest(f"http://app.example.test/{asset}", "document")
+                await self.handlers["request"](static)
+                await self.handlers["response"](FakeResponse(static, {"content-type": "text/html"}))
             await self.handlers["request"](FakeRequest("http://app.example.test/api/me?x=1", "xhr"))
             await self.handlers["request"](FakeRequest("http://cdn.example.test/asset.js", "xhr"))
             await self.handlers["request"](FakeRequest("http://app.example.test/app.js", "script"))
 
+        async def evaluate(self, script, base_url):
+            return {
+                "links": ["http://app.example.test/dashboard", "http://cdn.example.test/tracker"],
+                "forms": [{
+                    "action": "/api/search",
+                    "method": "post",
+                    "selector": "form:nth-of-type(1)",
+                    "submit_selector": "#search-submit",
+                    "submit_text": "Search",
+                    "fields": [{"name": "q", "type": "search", "value": "", "selector": "#q"}],
+                }],
+                "buttons": [{
+                    "text": "Open settings",
+                    "selector": "#settings",
+                    "form_selector": "",
+                    "route_hint": "/settings",
+                }],
+            }
+
+        async def fill(self, selector, value):
+            self.fills.append((selector, value))
+
+        async def click(self, selector):
+            self.clicks.append(selector)
+
+        async def wait_for_load_state(self, state, timeout=None):
+            return None
+
     class FakeContext:
         def __init__(self):
             self.cookies = None
+            self.page = FakePage()
 
         async def add_cookies(self, cookies):
             self.cookies = cookies
 
         async def new_page(self):
-            return FakePage()
+            return self.page
 
     class FakeBrowser:
         async def new_context(self, **kwargs):
@@ -284,11 +336,242 @@ async def test_crawler_engine_captures_same_domain_xhr_and_drops_external(monkey
             return False
 
     monkeypatch.setattr("secscan.crawler.engine.async_playwright", lambda: FakePlaywright())
-    records = await CrawlerEngine(Config(), Session(cookies=[{"name": "sid", "value": "1"}], headers={"Authorization": "Bearer x"})).crawl("app")
-    assert len(records) == 1
-    assert records[0].url == "http://app.example.test/api/me?x=1"
-    assert records[0].query_params == {"x": "1"}
+    crawler = CrawlerEngine(Config(), Session(
+        cookies=[{"name": "sid", "value": "1"}],
+        headers={"Authorization": "Bearer x"},
+        captured_requests=[{
+            "method": "POST",
+            "url": "http://app.example.test/rest/user/login",
+            "headers": {"content-type": "application/json"},
+            "post_data": '{"email":"user@example.test","password":"secret"}',
+        }],
+    ))
+    records = await crawler.crawl("app")
+    assert len(records) == 5
+    assert records[0].method == "POST"
+    assert records[0].url == "http://app.example.test/rest/user/login"
+    assert records[0].post_data_text == '{"email":"user@example.test","password":"secret"}'
+    assert records[1].url == "http://app.example.test"
+    assert "cookie" not in {key.lower() for key in records[1].headers}
+    assert records[2].url == "http://app.example.test/api/me?x=1"
+    assert records[2].query_params == {"x": "1"}
+    assert records[3].url == "http://app.example.test/dashboard"
+    assert all(not record.url.endswith((".js", ".css", ".png")) for record in records)
     assert _host("http://app.example.test/a") == "app.example.test"
+    surface = crawler.last_dom_surface
+    assert surface.links == ["http://app.example.test/dashboard"]
+    assert surface.forms[0].action == "http://app.example.test/api/search"
+    assert surface.forms[0].fields[0].selector == "#q"
+    assert surface.forms[0].submit_selector == "#search-submit"
+    assert surface.buttons[0].route_hint == "/settings"
+    assert crawler.visited_urls == {"http://app.example.test/", "http://app.example.test/dashboard"}
+    assert crawler.max_depth_reached == 1
+    assert crawler.last_summary == "Crawl complete: 2 pages visited, 5 endpoints captured, depth 1 reached, stopped by queue_empty."
+
+
+def test_crawler_queue_deduplicates_hash_routes_and_rejects_external_or_deep_urls():
+    queue = deque()
+    queued = set()
+    visited = set()
+    base_url = "http://app.example.test"
+
+    assert _enqueue_url(queue, queued, visited, "http://app.example.test/#/search", 1, base_url, 3)
+    assert _crawl_key("http://app.example.test/#/search", base_url) == "http://app.example.test/search"
+    assert not _enqueue_url(queue, queued, visited, "http://app.example.test/#/search", 1, base_url, 3)
+    assert not _enqueue_url(queue, queued, visited, "http://external.example/search", 1, base_url, 3)
+    assert not _enqueue_url(queue, queued, visited, "http://app.example.test/#/deep", 4, base_url, 3)
+    assert list(queue) == [("http://app.example.test/#/search", 1)]
+
+
+@pytest.mark.asyncio
+async def test_dom_extraction_retries_after_navigation_race():
+    class Page:
+        def __init__(self):
+            self.evaluations = 0
+            self.waits = 0
+
+        async def evaluate(self, script, base_url):
+            self.evaluations += 1
+            if self.evaluations == 1:
+                raise RuntimeError("Execution context was destroyed")
+            return {"links": ["/next"], "forms": [], "buttons": []}
+
+        async def wait_for_load_state(self, state, timeout=None):
+            self.waits += 1
+
+    page = Page()
+    surface = await _extract_dom_surface(page, "http://example.test")
+    assert surface.links == ["http://example.test/next"]
+    assert page.evaluations == 2 and page.waits == 1
+
+
+@pytest.mark.asyncio
+async def test_crawler_navigation_timeout_waits_for_dom_before_extracting():
+    from playwright.async_api import TimeoutError as PlaywrightTimeoutError
+
+    class Page:
+        def __init__(self):
+            self.dom_waits = 0
+            self.settle_waits = []
+
+        async def goto(self, url, wait_until=None, timeout=None):
+            raise PlaywrightTimeoutError("network idle timed out")
+
+        async def wait_for_load_state(self, state, timeout=None):
+            assert state == "domcontentloaded"
+            self.dom_waits += 1
+
+        async def wait_for_timeout(self, timeout):
+            self.settle_waits.append(timeout)
+
+    page = Page()
+    await _goto_page(page, "http://example.test")
+    assert page.dom_waits == 1
+    assert page.settle_waits == [1500]
+
+
+@pytest.mark.asyncio
+async def test_forced_browsing_discovers_2xx_5xx_skips_400_404_and_rate_limits():
+    class Response:
+        def __init__(self, status, text):
+            self.status_code = status
+            self.headers = {"content-type": "text/plain"}
+            self.text = text
+
+    class Client:
+        async def get(self, url):
+            path = url.replace("http://example.test", "")
+            if "secscan-nonexistent-probe-" in path or path == "/shell":
+                return Response(200, "<html><script>app shell</script></html>")
+            statuses = {
+                "/unique": (200, '{"real":true}'),
+                "/error": (500, "server error"),
+                "/bad": (400, "bad"),
+                "/missing": (404, "missing"),
+            }
+            status, text = statuses[path]
+            return Response(status, text)
+
+    class Lease:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+
+    class Limiter:
+        def __init__(self):
+            self.urls = []
+
+        async def acquire(self, url):
+            self.urls.append(url)
+            return Lease()
+
+    limiter = Limiter()
+    paths = ["/shell", "/unique", "/error", "/bad", "/missing"]
+    found = await _forced_browse("http://example.test", paths, Session(), limiter, Client())
+    assert [(entry.url, entry.response_status) for entry in found] == [
+        ("http://example.test/unique", 200),
+        ("http://example.test/error", 500),
+    ]
+    assert len(limiter.urls) == len(paths) + 1
+    assert limiter.urls[1:] == [f"http://example.test{path}" for path in paths]
+
+
+def test_forced_browsing_wordlist_and_disable_switch():
+    assert len(_load_wordlist()) == 50
+
+    class Target:
+        base_url = "http://example.test"
+
+    class Scan:
+        max_concurrency = 1
+        rate_limit_rps = 100
+
+    class Crawler:
+        forced_browsing_enabled = False
+
+    class Config:
+        target = Target()
+        scan = Scan()
+        crawler = Crawler()
+
+    assert CrawlerEngine(Config(), Session()).forced_browsing_enabled is False
+
+
+@pytest.mark.asyncio
+async def test_crawler_navigation_blocks_external_redirect_and_returns_in_scope():
+    from secscan.replay.ratelimit import RateLimiter
+
+    class Page:
+        def __init__(self):
+            self.url = "http://app.example.test/start"
+            self.gotos = []
+
+        async def goto(self, url, wait_until=None):
+            self.gotos.append(url)
+            self.url = "https://external.example/" if url.endswith("/redirect") else url
+
+    page = Page()
+    ok = await _navigate_in_scope(
+        page,
+        "http://app.example.test/redirect",
+        "http://app.example.test/start",
+        "http://app.example.test",
+        RateLimiter(max_concurrency=1, rate_limit_rps=100),
+    )
+    assert ok is False
+    assert page.gotos == ["http://app.example.test/redirect", "http://app.example.test/start"]
+
+
+@pytest.mark.asyncio
+async def test_crawler_route_hint_click_extracts_and_queues_resulting_page():
+    from secscan.crawler.blocklist import BlocklistChecker
+    from secscan.replay.ratelimit import RateLimiter
+
+    class Page:
+        def __init__(self):
+            self.url = "http://app.example.test/"
+            self.clicks = []
+            self.gotos = []
+
+        async def click(self, selector, timeout=None):
+            self.clicks.append(selector)
+            self.url = "http://app.example.test/#/settings"
+
+        async def wait_for_load_state(self, state, timeout=None):
+            return None
+
+        async def evaluate(self, script, base_url):
+            return {"links": ["/profile"], "forms": [], "buttons": []}
+
+        async def goto(self, url, wait_until=None):
+            self.gotos.append(url)
+            self.url = url
+
+    queue = deque()
+    queued = set()
+    visited = {"http://app.example.test/"}
+    page = Page()
+    await _follow_route_hint_buttons(
+        page,
+        [ButtonSpec("Settings", "#settings", route_hint="/#/settings")],
+        "http://app.example.test/",
+        0,
+        "http://app.example.test",
+        queue,
+        queued,
+        visited,
+        3,
+        BlocklistChecker(),
+        RateLimiter(max_concurrency=1, rate_limit_rps=100),
+    )
+    assert page.clicks == ["#settings"]
+    assert page.gotos == ["http://app.example.test/"]
+    assert list(queue) == [
+        ("http://app.example.test/#/settings", 1),
+        ("http://app.example.test/profile", 2),
+    ]
 
 
 def test_crawler_request_to_entry_preserves_post_body_and_content_type():
@@ -302,6 +585,110 @@ def test_crawler_request_to_entry_preserves_post_body_and_content_type():
     assert entry.method == "POST"
     assert entry.post_data_mime == "application/json"
     assert entry.post_data_text == '{"name":"secscan"}'
+
+
+@pytest.mark.asyncio
+async def test_crawler_form_interaction_skips_password_hidden_file_and_blocked_forms():
+    from secscan.crawler.blocklist import BlocklistChecker
+    from secscan.replay.ratelimit import RateLimiter
+
+    class Page:
+        def __init__(self):
+            self.fills = []
+            self.clicks = []
+
+        async def fill(self, selector, value):
+            self.fills.append((selector, value))
+
+        async def click(self, selector):
+            self.clicks.append(selector)
+
+        async def wait_for_load_state(self, state, timeout=None):
+            return None
+
+    page = Page()
+    forms = [
+        FormSpec(
+            action="http://example.test/search",
+            method="GET",
+            submit_selector="#submit",
+            fields=[
+                FormFieldSpec("q", "search", "", "#q"),
+                FormFieldSpec("email", "email", "", "#email"),
+                FormFieldSpec("n", "number", "", "#n"),
+                FormFieldSpec("p", "password", "", "#p"),
+                FormFieldSpec("csrf", "hidden", "token", "#csrf"),
+                FormFieldSpec("upload", "file", "", "#file"),
+            ],
+        ),
+        FormSpec(
+            action="http://example.test/delete",
+            method="POST",
+            submit_selector="#delete",
+            fields=[FormFieldSpec("name", "text", "", "#name")],
+        ),
+    ]
+    await _interact_with_forms(page, forms, BlocklistChecker(), RateLimiter(max_concurrency=1, rate_limit_rps=100))
+    assert page.fills == [("#q", "secscan_test"), ("#email", "test@secscan.internal"), ("#n", "1")]
+    assert page.clicks == ["#submit"]
+
+
+@pytest.mark.asyncio
+async def test_crawler_form_interaction_submits_standalone_inputs_with_enter():
+    from secscan.crawler.blocklist import BlocklistChecker
+    from secscan.replay.ratelimit import RateLimiter
+
+    class Page:
+        def __init__(self):
+            self.fills = []
+            self.clicks = []
+            self.presses = []
+
+        async def fill(self, selector, value):
+            self.fills.append((selector, value))
+
+        async def click(self, selector):
+            self.clicks.append(selector)
+
+        async def press(self, selector, key):
+            self.presses.append((selector, key))
+
+        async def wait_for_load_state(self, state, timeout=None):
+            return None
+
+    page = Page()
+    await _interact_with_forms(
+        page,
+        [FormSpec(action="http://example.test/#/search", method="GET", fields=[FormFieldSpec("q", "text", "", "#q")])],
+        BlocklistChecker(),
+        RateLimiter(max_concurrency=1, rate_limit_rps=100),
+    )
+    assert page.fills == [("#q", "secscan_test")]
+    assert page.clicks == []
+    assert page.presses == [("#q", "Enter")]
+
+
+@pytest.mark.asyncio
+async def test_crawler_form_submission_timeout_does_not_abort_crawl():
+    from secscan.crawler.blocklist import BlocklistChecker
+    from secscan.replay.ratelimit import RateLimiter
+
+    class Page:
+        async def fill(self, selector, value):
+            return None
+
+        async def press(self, selector, key):
+            raise TimeoutError("stale selector")
+
+        async def wait_for_load_state(self, state, timeout=None):
+            raise AssertionError("submission failure should skip this wait")
+
+    await _interact_with_forms(
+        Page(),
+        [FormSpec(action="http://example.test/search", method="GET", fields=[FormFieldSpec("q", "text", "", "#q")])],
+        BlocklistChecker(),
+        RateLimiter(max_concurrency=1, rate_limit_rps=100),
+    )
 
 
 def test_parse_har_and_request_helpers(tmp_path):
@@ -477,3 +864,52 @@ def test_cli_run_crawl_only_flag_skips_checks(monkeypatch):
     result = CliRunner().invoke(app, ["run", "--target", "t", "--crawl-only"])
     assert result.exit_code == 0
     assert "Crawl-only mode" in result.output
+
+
+def test_cli_authorized_hosts_preflight_blocks_remote_and_allows_local_or_listed():
+    import typer
+    from secscan.cli.commands import _require_authorized_host
+
+    @dataclass
+    class Target:
+        base_url: str
+
+    @dataclass
+    class Crawler:
+        authorized_hosts: list[str]
+
+    @dataclass
+    class Config:
+        target: Target
+        crawler: Crawler
+
+    with pytest.raises(typer.BadParameter, match="not in the authorized_hosts"):
+        _require_authorized_host(Config(Target("https://client.example"), Crawler([])))
+    _require_authorized_host(Config(Target("http://localhost:3000"), Crawler([])))
+    _require_authorized_host(Config(Target("http://127.0.0.1:8080"), Crawler([])))
+    _require_authorized_host(Config(Target("https://client.example"), Crawler(["client.example"])))
+
+
+def test_blocklist_checker_blocks_default_destructive_patterns():
+    from secscan.crawler.blocklist import BlocklistChecker
+    from secscan.crawler.engine import FormFieldSpec, FormSpec
+
+    checker = BlocklistChecker()
+    assert checker.blocks_form(FormSpec(action="http://example.test/delete-account", method="POST"))
+    assert checker.blocks_form(FormSpec(action="http://example.test/profile", method="POST", submit_text="Remove user"))
+    assert checker.blocks_form(FormSpec(action="http://example.test/profile", method="POST", fields=[FormFieldSpec("_method", "hidden", "DELETE", "#m")]))
+    assert checker.blocks_form(FormSpec(action="http://example.test/profile", method="POST", fields=[FormFieldSpec("_method", "hidden", "PUT", "#m")]))
+    assert checker.blocks_button_text("Log out")
+    assert not checker.blocks_form(FormSpec(action="http://example.test/search", method="GET", submit_text="Search"))
+    assert not checker.blocks_button_text("Search")
+
+
+def test_blocklist_checker_extra_and_override_config():
+    from secscan.crawler.blocklist import BlocklistChecker
+    from secscan.crawler.engine import FormSpec
+
+    extra = BlocklistChecker(extra_patterns=["archive"])
+    assert extra.blocks_form(FormSpec(action="http://example.test/archive", method="POST"))
+    override = BlocklistChecker(extra_patterns=["archive"], override_defaults=True)
+    assert override.blocks_form(FormSpec(action="http://example.test/archive", method="POST"))
+    assert not override.blocks_form(FormSpec(action="http://example.test/delete", method="POST"))

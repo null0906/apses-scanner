@@ -18,6 +18,7 @@ class Session:
     cookies: list[dict[str, Any]] = field(default_factory=list)
     headers: dict[str, str] = field(default_factory=dict)
     storage_state: dict[str, Any] = field(default_factory=dict)
+    captured_requests: list[dict[str, Any]] = field(default_factory=list)
     expires_at: datetime | None = None
 
     def is_expired(self) -> bool:
@@ -51,6 +52,7 @@ async def bootstrap_session(config: Any, target_dir: Path | None = None) -> Sess
 
     captured_auth_headers: list[str] = []
     captured_login_bodies: list[str] = []
+    captured_requests: list[dict[str, Any]] = []
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
@@ -71,6 +73,13 @@ async def bootstrap_session(config: Any, target_dir: Path | None = None) -> Sess
             auth = request.headers.get("authorization")
             if auth and auth.lower().startswith("bearer "):
                 captured_auth_headers.append(auth)
+            if request.resource_type in {"xhr", "fetch"}:
+                captured_requests.append({
+                    "method": request.method,
+                    "url": request.url,
+                    "headers": dict(request.headers or {}),
+                    "post_data": request.post_data or "",
+                })
 
         page.on("request", record_request)
         page.on("response", record_response)
@@ -83,7 +92,13 @@ async def bootstrap_session(config: Any, target_dir: Path | None = None) -> Sess
             headers["Authorization"] = f"Bearer {token}"
         await browser.close()
 
-    return Session(cookies=cookies, headers=headers, storage_state=storage_state, expires_at=datetime.now(timezone.utc) + timedelta(minutes=expiry_minutes))
+    return Session(
+        cookies=cookies,
+        headers=headers,
+        storage_state=storage_state,
+        captured_requests=captured_requests,
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=expiry_minutes),
+    )
 
 
 def _select_bearer_token(auth_headers: list[str], cookies: list[dict[str, Any]], bodies: list[str], storage_state: dict[str, Any]) -> str | None:

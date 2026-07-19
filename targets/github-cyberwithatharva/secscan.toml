@@ -1,7 +1,7 @@
 # secscan.toml — per-target configuration
 [target]
-name = "juice-shop-v2"
-base_url = "http://localhost:3000"
+name = "github-cyberwithatharva"
+base_url = "https://github.com/CyberWithAtharva"
 notes = ""
 
 [scan]
@@ -22,6 +22,13 @@ session_expiry_minutes = 30
 max_depth = 3
 max_pages = 50
 max_time_seconds = 1800
+# Sequential HTTP probes for common paths after the browser crawl completes.
+forced_browsing_enabled = false
+# Optional custom wordlist path. Leave empty to use secscan/crawler/wordlist.txt.
+wordlist_path = ""
+# Full scan mode is blocked for non-local hosts unless explicitly listed here.
+# This is an ethical pre-flight gate; crawling remains allowed without authorization.
+authorized_hosts = []
 # Extra destructive-action patterns to skip during crawler form interaction.
 # These add to the default blocklist: delete/remove/destroy/deactivate/disable/cancel/revoke/terminate/purge/wipe/reset/logout/signout.
 blocklist_extra = []

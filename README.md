@@ -19,6 +19,7 @@ Latest Juice Shop tuning showed real findings from `sqli`, `headers`, and `data`
 Read this before using SecScan on a client target. These are not edge cases; they are v0.1 boundaries.
 
 - XSS: v0.1 mostly tests the captured JSON/API surface. Reflected or DOM XSS that only appears after the SPA renders data in the browser is not reliably detected. Test XSS manually in the rendered app.
+  More specifically: the XSS check detects server-side reflected XSS where the payload appears in an HTML response body. It does not detect DOM-based XSS where a JavaScript framework (Angular, React, Vue) renders the payload client-side. Most modern SPAs use DOM-based XSS patterns. Always test XSS manually in the rendered application.
 - JWT attacks: the JWT check captures bearer tokens and replays token mutations against authenticated endpoints. It only finds targets that accept tampered tokens, such as `alg:none`, weak secrets, or accepted claim tampering. It does not find logic-level JWT authorization flaws.
 - SSRF: v0.1 does not have production callback infrastructure wired for real OOB confirmation. SSRF remains manual unless callback infrastructure is explicitly configured and verified.
 - Open redirect: only captured redirect-like parameters are tested. If the HAR does not include a redirect parameter, SecScan will not discover one.
@@ -334,6 +335,31 @@ After SecScan runs, manual VAPT begins.
 - Review authentication and session management behavior manually.
 
 Do not paste raw SecScan output into a client report without human verification.
+
+## Known Limitations and Operator Warnings
+
+### Authenticated crawling may trigger application-side effects
+
+The crawler navigates the target app as an authenticated user. Some applications trigger server-side effects during normal page loads -- including audit log entries, pipeline bootstraps, webhook triggers, notification events, or state initialization calls. These are not caused by injection payloads; they are caused by the app itself responding to authenticated navigation.
+
+This was observed during Phase 5 Tier 1 validation: a Next.js CRM issued a POST to a pipeline-initialization endpoint during a crawl-only run with no scan checks active.
+
+Operator guidance:
+
+- Always use a dedicated test account that the client expects to generate activity.
+- Inform the client before crawling that authenticated navigation will produce entries in their access logs and audit trails.
+- Review the crawl summary log for any unexpected POST requests captured during the crawl -- these indicate app-side writes triggered by navigation.
+- If the client's app has sensitive pipeline or workflow triggers, confirm with them which routes to avoid before crawling. Add those routes to the `[crawler]` `blocklist_extra` in `secscan.toml`.
+
+### GitHub-style large-platform SPAs produce thin coverage
+
+Large SaaS platforms (GitHub, Google Workspace, and similar) use JavaScript-heavy rendering patterns where the crawler's declarative navigation strategy captures only the initial page load. Depth-3 traversal on these targets typically yields fewer than 10 unique endpoints. This is a known v0.2 limitation -- not a bug.
+
+For these targets, HAR-based ingest (`secscan ingest --har`) remains the recommended approach. The crawler is most effective on application-style SPAs (dashboards, CRMs, fintech apps) rather than large platform-style products.
+
+### Role-identical endpoint graphs
+
+When crawling an app with multiple roles (e.g. student and admin), the crawler may produce identical or near-identical endpoint graphs if role-gated UI routes are only accessible through interactions the Phase 3 crawler cannot reach (modal-gated content, role-switch flows, deep navigation trees). Verify role coverage manually for high-value authorization testing.
 
 ## 7. Safety and Scope
 

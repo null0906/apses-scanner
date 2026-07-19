@@ -5,6 +5,7 @@ from typing import AsyncIterator, Any
 from urllib.parse import urlsplit
 from .base import Check, Endpoint, Finding
 from .common import more_access, poc
+from secscan.utils.http import fingerprint_spa_shell
 
 _ID_NAME_RE = re.compile(r"^(id|.*_id|uuid|ref|resource|account|tenant|object|hash)$", re.I)
 _SHORT_HASH_RE = re.compile(r"^[a-f0-9]{6,16}$", re.I)
@@ -15,9 +16,7 @@ def _more_permissive(baseline: Any, response: Any) -> bool:
 
 
 def _is_spa_shell(response: Any) -> bool:
-    ctype = (response.headers.get("content-type") or "").lower()
-    body = response.body_text.lower()
-    return "text/html" in ctype and "<app-root" in body or ("text/html" in ctype and "<script" in body and "</html>" in body)
+    return fingerprint_spa_shell(response.headers, response.body_text).looks_like_shell
 
 
 class AuthzCheck(Check):
